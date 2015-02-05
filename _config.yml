@@ -1,19 +1,11 @@
 # Site settings
 title: 技术点滴
 email: your-email@domain.com
-description: > 记录技术成长
+description:  记录技术成长
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "guimingyue.github.io" # the base hostname & protocol for your site
 #twitter_username: jekyllrb
 #github_username:  jekyll
 
 # Build settings
-highlighter: pygments
-markdown: redcarpet
-redcarpet:
-  extensions:
-    - hard_wrap
-    - no_intra_emphasis
-    - autolink
-    - strikethrough
-    - fenced_code_blocks
+markdown: kramdown
