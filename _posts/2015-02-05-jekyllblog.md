@@ -1,6 +1,6 @@
 ---
 layout: page
-title: 使用jekyll和github pages搭建个人
+title: 使用jekyll和github pages搭建个人博客总结
 ---
 弄了一个晚上，终于弄好了github pages。在这里记录下来，方便喜欢折腾的同学。一下环境都是在
 Windows下搭建。
@@ -18,35 +18,37 @@ Windows下搭建。
 让我们在本地预览文件，github pages也是使用Jekyll来解析页面的，所以最好还是安装一个Jekyll。
 关于Jekyll，可以参考[http://jekyllcn.com/][2]
 
-    1. 安装Jekyll
-    由于Jekyll是使用Ruby语言开发，所以首先需要安装Ruby环境，在[http://rubyinstaller.org/][3]
-    下载ruby安装包和Devkit，官网建议使用1.9.3版本。
-    2. 安装好ruby后，将其路径加入到Path中。
-    3. 进入到devkit解压目录下，执行如下命令：
+1. 安装Jekyll
+由于Jekyll是使用Ruby语言开发，所以首先需要安装Ruby环境，在[http://rubyinstaller.org/][3]
+下载ruby安装包和Devkit，官网建议使用1.9.3版本。
+2. 安装好ruby后，将其路径加入到Path中。
+3. 进入到devkit解压目录下，执行如下命令：
 
-    ```shell
-    ruby dk.rb init
-    ruby dk.rb install
-    ```
+```shell
+ruby dk.rb init
 
-    4. 安装Jekyll
-    安装Jekyll需要使用gem命令从网络下载安装包，但是由于众所周知的原因，直接从国外站点下载
-    可能会有问题，所以这里使用ruby.taobao.org的镜像。执行如下命令
+ruby dk.rb install
+```
 
-    ```shell
-    gem sources --remove https://rubygems.org/
-    gem sources -a https://ruby.taobao.org/
-    gem sources -l
-    ```
+4. 安装Jekyll
+安装Jekyll需要使用gem命令从网络下载安装包，但是由于众所周知的原因，直接从国外站点下载
+可能会有问题，所以这里使用ruby.taobao.org的镜像。执行如下命令
 
-    完成之后，gem sources -l命令的结果只有一条结果，即https://ruby.taobao.org/，请确保
-    只有这一条，移除的时候请确保移除的是https://rubygems.org/,接下来就执行
+```shell
+gem sources --remove https://rubygems.org/
 
-    ```shell
-    gem install jekyll
-    ```
+gem sources -a https://ruby.taobao.org/
 
-    命令安装Jekyll
+gem sources -l
+```
+
+完成之后，gem sources -l命令的结果只有一条结果，即`https://ruby.taobao.org/``，请确保
+只有这一条，移除的时候请确保移除的是`https://rubygems.org/``,接下来就执行下面的命令安装
+Jekyll
+
+```shell
+gem install jekyll
+```
 
 安装完Jekyll之后，选择一个目录执行`jekyll new blog`命令，新建一个目录，这个blog就是你的
 站点名称，可以任意执行，接下来生成一个blog目录，在这个blog目录中，有一个_posts目录，用于
