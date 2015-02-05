@@ -1,6 +1,6 @@
 # Site settings
 title: 技术点滴
-#email: your-email@domain.com
+email: your-email@domain.com
 description: > 记录技术成长
 baseurl: "/guimingyue.github.io/" # the subpath of your site, e.g. /blog/
 url: "guimingyue.github.io" # the base hostname & protocol for your site
