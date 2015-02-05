@@ -58,6 +58,14 @@ gem install jekyll
 拷贝到github pages所在的本地目录中，然后使用git提交到github。每次写完文章就将其放入到
 _posts目录中，再提交到github，就可以在你的github pages中看到了。
 
+Jekyll有一个好处是如果写的markdown文档有什么错误，可以在本地的jekyll中发现，及时发现错误。
+因为markdown文件提交到github pages以后，如果解析markdown文件有错误，github给回发送一个
+错误邮件，并没有指出错误的原因。今天遇到一个问题，markdown提交到github后，总是不能正确解
+析，找原因找了很长时间，不知道是什么原因，一直以为是本地配置pygments环境的问题，更换markdown
+解释器试，还是没有解决，但是当时也没想着看邮件，如果早点看邮箱，就会早点解决问题了，因为晚上开
+邮箱就看到github发过来提示这个markdown文件有错误，于是就再启动本地的jekyll，仔细看启动错误
+的原因才知道是我在这个文件中使用了“```shell”这样的语法，pygments不支持。
+
 ##提交到github
 
 首先将你的github pages clone到本地，执行命令
