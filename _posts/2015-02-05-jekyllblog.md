@@ -87,11 +87,13 @@ git push origin master
 
 ##Reference
 
-创建Github Pages：[每个人都应该有一个Jekyll博客][1]  
-Jekyll配置：http://justcoding.iteye.com/blog/1959737  
-搭建Jekyll Windows环境：http://www.cnblogs.com/yevon/p/3308158.html  
-Jekyllcn: [Jekyllcn][2]  
+* 创建Github Pages：[每个人都应该有一个Jekyll博客][1]  
+* Jekyll配置：[http://justcoding.iteye.com/blog/1959737][4]
+* 搭建Jekyll Windows环境：[http://www.cnblogs.com/yevon/p/3308158.html][5]  
+* Jekyllcn: [Jekyllcn][2]  
 
 [1]: http://www.cellier.me/2015/01/04/jekyll%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E6%95%99%E7%A8%8B/
 [2]: http://jekyllcn.com/
 [3]: http://rubyinstaller.org/downloads/
+[4]: http://justcoding.iteye.com/blog/1959737
+[5]: http://www.cnblogs.com/yevon/p/3308158.html
