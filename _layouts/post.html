@@ -11,5 +11,13 @@ layout: default
   <article class="post-content">
     {{ content }}
   </article>
+  <nav>
+    {% if page.previous %}
+    <a href="{{ page.previous.url }}" title="{{ page.previous.title }}">&larr; {{ page.previous.title }}</a>
+    {% endif %}
+    {% if page.next %}
+    <a href="{{ page.next.url }}" title="{{ page.next.title }}">{{ page.next.title }} &rarr;</a>
+    {% endif %}
+  </nav>
 
 </div>
