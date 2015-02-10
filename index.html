@@ -3,7 +3,7 @@ layout: default
 ---
   <h1 class="page-heading">Posts</h1>
 
-  <ul class="post-list">
+  <ul class="post-list" id="post-list">
     {% for post in site.posts %}
       <li>
         <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
@@ -19,6 +19,25 @@ layout: default
 -->
 <script type="text/javascript">
   $(document).ready(function() {
+    var parameter = location.search;
+    if(parameter.length < 1) {
+      return;
+    }
+    var type = parameter.substring(1);
+    var dataStr = '{ {% for cat in site.categories %}{% if cat[0] != site.categories.first[0] %},{% endif %}"{{ cat[0] }}" : [{% for post in cat[1] %}{% if post != cat[1].first %},{% endif %}{"url":"{{post.url}}", "title":"{{post.title}}", "date":"{{post.date | date:"%d/%m/%Y"}}"}{% endfor %}]{% endfor %} }';
+    //获取URL，解析参数，然后将参数所在的分类遍历，显示出来
+    //菜单的URL中卫index.html?category=type
+    var data = JSON.parse(dataStr);
+    var types = data[type];
+    if(types.length == 0) {
+      return;
+    }
+
+    $(".post-list").empty("");
+    for(var d in types) {
+      $("#post-list").append('<li><span class="post-meta">' + types[d]["date"] + '</span>')
+      .append('<h2><a class="post-link" href=' + types[d]["url"] + '>' + types[d]["title"] + '</a></h2></li>');
+    }
 
   });
 </script>

@@ -13,7 +13,7 @@
               aria-expanded="false">Category <span class="caret"></span></a>
               <ul class="dropdown-menu" role="menu">
                 {% for category in site.categories %}
-                <li><a href="/{{ category | first }}" title="view all posts">{{ category | first }}({{ category | last | size }})</a></li>
+                <li><a href="?{{ category | first }}" title="view all posts">{{ category | first }}({{ category | last | size }})</a></li>
                 {% endfor %}
               </ul>
             </li>
