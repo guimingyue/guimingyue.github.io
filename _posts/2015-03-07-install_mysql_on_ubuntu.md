@@ -53,3 +53,4 @@ bind-address          = 127.0.0.1
 
 [1]: http://packages.ubuntu.com/source/precise/libaio
 [2]: http://blog.csdn.net/mydeman/article/details/5432937
+[3]: http://dev.mysql.com/doc/refman/5.6/en/linux-installation-debian.html
