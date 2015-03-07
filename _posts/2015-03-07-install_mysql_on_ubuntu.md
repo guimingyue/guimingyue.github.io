@@ -47,6 +47,7 @@ bind-address          = 127.0.0.1
 
 ##Reference
 [如何打开MySQL中root账户的远程登录][2]
+
 [http://dev.mysql.com/doc/refman/5.6/en/linux-installation-debian.html][3]
 
 
