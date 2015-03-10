@@ -44,6 +44,24 @@ bind-address          = 127.0.0.1
 
 再重启MySQL服务。
 
+##RedHat下MySQL的安装配置
+
+RedHat中安装配置MySQL复杂一些，首先是安装时，在安装mysql-server时提示与已经安装的mysql-libs冲突，
+MySQL官方给出的解决办法是先安装MySQL-share-compat包，再卸载mysql-libs。接下来安装的步骤与ubuntu
+中安装类似。
+
+安装好MySQL之后，MySQL给root用户设置了一个初始密码，这个密码在mysql_secret中，这个文件位置是
+`/root/.mysql_secret`，貌似在其他地方也有这个文件，使用这个密码登录MySQL，然后再修改密码。
+
+接下来配置远程登陆基本与Ubuntu上一致，但是在Redhat中需要设置防火墙规则，在`/etc/sysconfig/iptables`中的
+```sql
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
+```
+这行下加入
+```sql
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 3306 -j ACCEPT
+```
+如果上面的配置没问题，那么基本就可以远程登陆MySQL了。
 
 ##Reference
 [如何打开MySQL中root账户的远程登录][2]
