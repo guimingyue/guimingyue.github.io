@@ -43,6 +43,7 @@ UTF-16 的编码算法如下<sup>[4]</sup>：
 ### Java 中的字符串
 
 在 Java 世界中，基本类型`char`占 2 个字节，即 16 位，所以`char`类型只能表示 Unicode 字符集的基本多语言平面中的字符，对于辅助平面需要 4 个字节来表示<sup>[3]</sup>。Java 的`String`和`Character`类提供了一系列方法支持，比如下面一段代码。
+
 ```
 @Test
 public void testStringValueOf() {
@@ -60,6 +61,7 @@ public void testStringValueOf() {
     Assert.assertEquals(Integer.toHexString(s.codePointAt(0)), "10151");
 }
 ```
+
 上面这段代码中，对于 值为`0x10151`的 code point，`Character.toChars(codePoint)`返回的字符数组长度为 2，说明这个辅助平面字符在 Java 中由两个字节表示。除了上面的这段代码中使用到的几个方法，还有其他的一些与 code point 方法可供使用<sup>5</sup>
 
 ### UTF-8
