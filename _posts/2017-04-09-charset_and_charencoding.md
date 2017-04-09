@@ -69,7 +69,7 @@ UTF-16 一般用于内存中处理数据，因为常用的字符都在基本多�
 
 UTF-8 的编码方式如图 2 所示。
 
-![图2 UTF-8](images/posts/UTF-8.png)
+![图2 UTF-8](/images/posts/UTF-8.png)
 __*UTF-8编码空间*__
 
 
