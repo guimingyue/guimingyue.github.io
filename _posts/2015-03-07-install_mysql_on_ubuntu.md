@@ -1,7 +1,7 @@
 ---
 layout: post
 title: ubuntu12.04下安装MySQL
-category: mysql
+category: MySQL
 ---
 想在虚拟机的ubuntu中安装MySQL数据库来做测试，发现网上的文章大部分是apt-get方式安装，但是我在ubuntu上安装mysql使用`sudo apt-get install mysql-server`一直没成功，所以只能另辟蹊径，其次在在ubuntu上，有人使用Linux上源码安装，这个貌似比较麻烦，作罢。所以在看了很多文章，都很麻烦，很想找个简单点的，依照MySQL的官方的文档，安装了MySQL5.6。MySQL官网提供的ubuntu12.04版本的MySQL安装包是一个`tar`格式的压缩包，解压出来有12个文件。下面就开始安装。
 

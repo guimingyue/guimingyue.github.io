@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 使用jekyll和github pages搭建个人博客总结
-category: jekyll
+category: Jekyll
 ---
 弄了一个晚上，终于弄好了github pages。在这里记录下来，方便喜欢折腾的同学。一下环境都是在
 Windows下搭建。
