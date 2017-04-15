@@ -51,18 +51,6 @@
     </div>
 
   </div>
- 
-  <div id="float-category">
-    <pre class="html" name="colorcode">
-      <h4>Category</h4>
-      <ul>
-        {% for category in site.categories %}
-        <li>
-          <a href="/{{ category | first }}.html" title="view all posts">{{ category | first }} {{ category | last | size }}</a>
-        </li> {% endfor %}
-      </ul>
-    </pre>
-  </div>
 
   <div id="gotop"></div>
   <style type="text/css">
