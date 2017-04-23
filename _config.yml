@@ -1,9 +1,9 @@
 # Site settings
-title: 吃睡
+title: Guimy 码字的地方
 #email: your-email@domain.com
-description:  吃睡吃睡吃吃睡
-baseurl: "" # the subpath of your site, e.g. /blog/
-url: "guimingyue.github.io" # the base hostname & protocol for your site
+description:  努力做一个持续输出价值的人
+baseurl: /blog/ # the subpath of your site, e.g. /blog/
+url: "guimy.me" # the base hostname & protocol for your site
 #twitter_username: jekyllrb
 #github_username:  jekyll
 
