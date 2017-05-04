@@ -8,6 +8,6 @@ url: guimy.me # the base hostname & protocol for your site
 #github_username:  jekyll
 
 # Build settings
-#markdown: kramdown
-markdown: redcarpet
+markdown: kramdown
+#markdown: redcarpet
 highlighter: pygments
