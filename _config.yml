@@ -10,4 +10,4 @@ url: guimy.me # the base hostname & protocol for your site
 # Build settings
 markdown: kramdown
 #markdown: redcarpet
-highlighter: pygments
+#highlighter: pygments
