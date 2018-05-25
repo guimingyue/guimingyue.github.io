@@ -69,37 +69,25 @@ public StringXmlApplicationContext(String[] stringXmls, ApplicationContext paren
 这段代码中 `stringXmls[i].getBytes()` 将字符串转换为字节数组使用了默认的编码，再看`String.getBytes`方法的代码，
 ```java
 public byte[] getBytes() {
-        return StringCoding.encode(value, 0, value.length);
-    }
+    return StringCoding.encode(value, 0, value.length);
+}
 static byte[] encode(char[] ca, int off, int len) {
-        String csn = Charset.defaultCharset().name();
-        try {
-            // use charset name encode() variant which provides caching.
-            return encode(csn, ca, off, len);
-        } catch (UnsupportedEncodingException x) {
-            warnUnsupportedCharset(csn);
-        }
-        try {
-            return encode("ISO-8859-1", ca, off, len);
-        } catch (UnsupportedEncodingException x) {
-            // If this code is hit during VM initialization, MessageUtils is
-            // the only way we will be able to get any kind of error message.
-            MessageUtils.err("ISO-8859-1 charset not available: "
-                             + x.toString());
-            // If we can not find ISO-8859-1 (a required encoding) then things
-            // are seriously wrong with the installation.
-            System.exit(1);
-            return null;
-        }
+    String csn = Charset.defaultCharset().name();
+    try {
+        return encode(csn, ca, off, len);
+    } catch (UnsupportedEncodingException x) {
+        warnUnsupportedCharset(csn);
     }
+    try {
+        return encode("ISO-8859-1", ca, off, len);
+    } catch (UnsupportedEncodingException x) {
+        System.exit(1);
+    	return null;
+    }
+}
 ```
-再打印一下 Syste.getProperty("file.encoding")，原来是 GBK，那问题也就明了了：
-在 XML 转换成字节数组时，使用 GBK 转换，而在从字节转换成字符串时按照 UTF-8 编码去解析的，所以报 Invalid byte 2 of 2-byte UTF-8 sequence，也就不奇怪了。
-
-再解释 UTF-8 的中文编码和 GBK 的中文编码的区别，解释清楚问什么会报Invalid byte 2 of 2-byte UTF-8 sequence
-
-
-
-![image](http://git.cn-hangzhou.oss-cdn.aliyun-inc.com/uploads/mingyue.gmy/Test/8bcc886f7dc373624740510120461cca/image.png)
-
+从`String csn = Charset.defaultCharset().name()`这行代码可以看到去拿了默认的编码，而默认的编码是通过`file.encoding`来指定的，所以很简单，打印一下`Syste.getProperty("file.encoding")`的值，所以执行了一次 `System.out.println(System.getProperty("file.encoding"))`发现打印出来的是`GBK`。那问题也就明了：
+在 XML 转换成字节序列时，使用`GBK`编码转换，而在从字节序列转换成字符串时按照 UTF-8 编码去解析的，所以报`Invalid byte 2 of 2-byte UTF-8 sequence`，也就不奇怪了。
+那么为什么是`Invalid byte 2 of 2-byte UTF-8 sequence`而不是`Invalid byte 2 of 3-byte UTF-8 sequence`或者是`Invalid byte 3 of 3-byte UTF-8 sequence`呢？
+要解释清楚这个问题，就需要了解一些`GBK`编码和`UTF-8`编码的知识了。
 
