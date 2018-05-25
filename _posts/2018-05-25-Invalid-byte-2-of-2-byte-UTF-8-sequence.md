@@ -37,8 +37,21 @@ Caused by: com.sun.org.apache.xerces.internal.impl.io.MalformedByteSequenceExcep
 	... 11 more
 
 ```
-报`Invalid byte 2 of 2-byte UTF-8 sequence.`这个错误，很多文章的办法是将为 encoding 改为 GBK 编码，但是为什么呢？
-以为遇到 JDK 的 bug 了。debug 进去排查，发现从 XML 文件解析出来的编码也是 UTF-8。那就奇怪了，那问题就出在将 XML 文本转换成字节数组的时候，和 xerces 解析字节数组的过程中。
+关键的报错信息时`Invalid byte 2 of 2-byte UTF-8 sequence.`这个错误，很多文章的办法是将为 encoding 改为 GBK 编码，但是为什么呢？那么我们先来简化代码，关键代码如下。
+```java
+String data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            + "<!DOCTYPE beans PUBLIC \"-//SPRING//DTD BEAN//EN\" \"http://www.springframework.org/dtd/spring-beans"
+            + ".dtd\">\n"
+            + "<beans>\n"
+            + "  <bean class=\"me.guimy.Student\" id=\"student\">\n"
+            + "    <property name=\"name\">\n"
+            + "      <value><![CDATA[中文]]></value>\n"
+            + "    </property>\n"
+            + "  </bean>\n"
+            + "</beans>";
+ApplicationContext applicationContext = new StringXmlApplicationContext(data, Functions.class.getClassLoader());
+```
+这段代码中加载一个 xml bean 文件，其中有一个值是中文，很显然在解析到中文的时候就报了`Invalid byte 2 of 2-byte UTF-8 sequence.`错。可以看到已经定义了 `encoding="UTF-8"`，所以理论上解析在解析的时候不应该无法解析中文的错误。遇到 JDK 的 bug 了。debug 进去排查，发现从 XML 文件解析出来的编码也是 UTF-8。那就奇怪了，那问题就出在将 XML 文本转换成字节数组的时候，和 xerces 解析字节数组的过程中。
 再看看
 ```java
 public StringXmlApplicationContext(String[] stringXmls, ApplicationContext parent, ClassLoader cl) {
@@ -90,16 +103,3 @@ static byte[] encode(char[] ca, int off, int len) {
 ![image](http://git.cn-hangzhou.oss-cdn.aliyun-inc.com/uploads/mingyue.gmy/Test/8bcc886f7dc373624740510120461cca/image.png)
 
 
-```java
-String data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            + "<!DOCTYPE beans PUBLIC \"-//SPRING//DTD BEAN//EN\" \"http://www.springframework.org/dtd/spring-beans"
-            + ".dtd\">\n"
-            + "<beans>\n"
-            + "  <bean class=\"me.guimy.Student\" id=\"student\">\n"
-            + "    <property name=\"name\">\n"
-            + "      <value><![CDATA[中文]]></value>\n"
-            + "    </property>\n"
-            + "  </bean>\n"
-            + "</beans>";
-        ApplicationContext applicationContext = new StringXmlApplicationContext(data, Functions.class.getClassLoader());
-```
