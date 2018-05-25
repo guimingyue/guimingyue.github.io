@@ -1,4 +1,9 @@
-遇到一个编码的问题，的规则文件时，报了
+---
+layout: post
+title: Invalid byte 2 of 2-byte UTF-8 sequence
+category: Java
+---
+前几天在使用 Spring 解析一个 XML bean 文件时遇到了编码的问题，报错异常栈如下图所示。
 ```java
 Exception in thread "main" org.springframework.beans.factory.BeanDefinitionStoreException: IOException parsing XML document from resource loaded from byte array; nested exception is com.sun.org.apache.xerces.internal.impl.io.MalformedByteSequenceException: Invalid byte 2 of 2-byte UTF-8 sequence.
 	at org.springframework.beans.factory.xml.XmlBeanDefinitionReader.doLoadBeanDefinitions(XmlBeanDefinitionReader.java:416)
