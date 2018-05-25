@@ -1,4 +1,4 @@
-遇到一个编码的问题，在解析 TDDL 的规则文件时，报了
+遇到一个编码的问题，的规则文件时，报了
 ```java
 Exception in thread "main" org.springframework.beans.factory.BeanDefinitionStoreException: IOException parsing XML document from resource loaded from byte array; nested exception is com.sun.org.apache.xerces.internal.impl.io.MalformedByteSequenceException: Invalid byte 2 of 2-byte UTF-8 sequence.
 	at org.springframework.beans.factory.xml.XmlBeanDefinitionReader.doLoadBeanDefinitions(XmlBeanDefinitionReader.java:416)
