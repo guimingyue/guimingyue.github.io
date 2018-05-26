@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-##关于
+## 关于
 
 80 后大龄码农一枚。
 
