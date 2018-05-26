@@ -88,6 +88,6 @@ static byte[] encode(char[] ca, int off, int len) {
 ```
 从`String csn = Charset.defaultCharset().name()`这行代码可以看到去拿了默认的编码，而默认的编码是通过`file.encoding`来指定的，所以很简单，打印一下`Syste.getProperty("file.encoding")`的值，所以执行了一次 `System.out.println(System.getProperty("file.encoding"))`发现打印出来的是`GBK`。那问题也就明了：
 在 XML 转换成字节序列时，使用`GBK`编码转换，而在从字节序列转换成字符串时按照 UTF-8 编码去解析的，所以报`Invalid byte 2 of 2-byte UTF-8 sequence`，也就不奇怪了。
-那么为什么是`Invalid byte 2 of 2-byte UTF-8 sequence`而不是`Invalid byte 2 of 3-byte UTF-8 sequence`或者是`Invalid byte 3 of 3-byte UTF-8 sequence`呢？
-要解释清楚这个问题，就需要了解一些`GBK`编码和`UTF-8`编码的知识了。
+那么为什么是`Invalid byte 2 of 2-byte UTF-8 sequence`而不是`Invalid byte 2 of 3-byte UTF-8 sequence`或者是`Invalid byte 3 of 3-byte UTF-8 sequence`呢？简单来说 GBK 编码的字节序列，在 UTF-8 编码下解析时，UTF-8 识别到根据某一个字节识别到当前连续的两个字节为一个字符，所以再解析第二个字节，但是发现第二个字节不符合 UTF-8 二字节字符的第二字节的编码规则，所以就报了`Invalid byte 2 of 2-byte UTF-8 sequence`。
+
 
