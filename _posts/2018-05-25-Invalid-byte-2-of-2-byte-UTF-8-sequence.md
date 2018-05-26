@@ -26,9 +26,7 @@ String data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 既然知道了解析 XML 文本对应的字节序列是使用的 UTF-8 编码，并且 XML 文本中也指定了 UTF-8 编码，那么怀疑的方向就是字节序列是怎么生成的，是否是 UTF-8 编码对应的字节序列？所以现在需要确定的是如何将 XML 文本转换成字节序列的。  
 可以看看 Spring 的`StringXmlApplicationContext`这个类的构造方法。 
 ```java
-public StringXmlApplicationContext(String[] stringXmls, ApplicationContext parent, ClassLoader cl) {
-        
-    }
+
 ```
 传入的参数是一个字符串数组，然后遍历每个字符串对象，这段代码中 `stringXmls[i].getBytes()` 将字符串转换为字节数组使用了默认的编码，再看`String.getBytes`方法的代码，
 ```java
