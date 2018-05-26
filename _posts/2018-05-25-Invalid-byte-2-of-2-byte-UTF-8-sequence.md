@@ -37,7 +37,8 @@ Caused by: com.sun.org.apache.xerces.internal.impl.io.MalformedByteSequenceExcep
 	... 11 more
 
 ```
-关键的报错信息时`Invalid byte 2 of 2-byte UTF-8 sequence.`这个错误，很多文章的办法是将为 encoding 改为 GBK 编码，但是为什么呢？那么我们先来简化代码，关键代码如下。
+关键的报错信息时`Invalid byte 2 of 2-byte UTF-8 sequence.`这个错误，很多文章提到的解决办法是将 encoding 改为 GBK 编码或者其他编码，但是为什么呢？产生这个问题的根本原因是什么？  
+为了搞清楚这个问题，我们先简化代码，关键代码如下。
 ```java
 String data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<!DOCTYPE beans PUBLIC \"-//SPRING//DTD BEAN//EN\" \"http://www.springframework.org/dtd/spring-beans"
@@ -51,7 +52,7 @@ String data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "</beans>";
 ApplicationContext applicationContext = new StringXmlApplicationContext(data, Functions.class.getClassLoader());
 ```
-这段代码中加载一个 xml bean 文件，其中有一个值是中文，很显然在解析到中文的时候就报了`Invalid byte 2 of 2-byte UTF-8 sequence.`错。可以看到已经定义了 `encoding="UTF-8"`，所以理论上解析在解析的时候不应该无法解析中文的错误。难道是遇到 JDK 的 bug 了？从异常栈可以看到 Spring 在解析 XML 调用了 JDK 中`com.sun.org.apache.xerces.internal.jaxp`包下的类来解析，所以针对这个疑问，可以先 debug 到 具体的类中排查使用什么编码在解析 XML，其实也可以从异常栈中看到是使用 UTF-8 的编码在解析，但是通过 debug 可以了解到，这个程序执行过程中解析 XML 是解析的文本对应的字节序列。
+这段代码中加载一个 Spring 的 XML bean 文件，其中有一个值是中文，很显然在解析到中文的时候就报了`Invalid byte 2 of 2-byte UTF-8 sequence.`错。可以看到已经定义了 `encoding="UTF-8"`，所以理论上解析在解析的时候不应该无法解析中文的错误。难道是遇到 JDK 的 bug 了？从异常栈可以看到 Spring 在解析 XML 调用了 JDK 中`com.sun.org.apache.xerces.internal.jaxp`包下的类来解析，所以针对这个疑问，可以先 debug 到 具体的类中排查到底使用什么编码在解析，其实也可以从异常栈中看到是使用 UTF-8 的编码在解析，但是通过 debug 可以了解到，这个程序执行过程中解析 XML 是解析的文本对应的字节序列。
 既然知道了解析 XML 文本对应的字节序列是使用的 UTF-8 编码，并且文本中也指定了 UTF-8 编码，那么怀疑的方向就是字节序列是怎么生成的，是否是 UTF-8 编码对应的字节序列？所以现在需要确定的如何将 XML 文本转换成字节序列的。可以看看 Spring 的 `StringXmlApplicationContext` 构造方法。
 ```java
 public StringXmlApplicationContext(String[] stringXmls, ApplicationContext parent, ClassLoader cl) {
