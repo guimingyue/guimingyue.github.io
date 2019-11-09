@@ -17,6 +17,7 @@ error: linking with `cc` failed: exit code: 1
 error: aborting due to previous error
 
 ```
+
 主要是错误是 `error: linking with `cc` failed: exit code: 1`。
 操作系统 macOS Catalina，检查 gcc 版本
 
@@ -24,6 +25,7 @@ error: aborting due to previous error
 $ gcc --version
 xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
 ```
+
 解决办法
 
 ```shell
@@ -39,4 +41,5 @@ Target: x86_64-apple-darwin19.0.0
 Thread model: posix
 InstalledDir: /Library/Developer/CommandLineTools/usr/bin
 ```
-再次
+
+再次执行 `rustc main.rs` 成功
