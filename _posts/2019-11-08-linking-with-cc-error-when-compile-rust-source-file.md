@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Rust 编译报错 linking with `cc` failed: exit code: 1 
+title: Rust 编译报错 linking with `cc` failed
 category: Rust
 ---
 
