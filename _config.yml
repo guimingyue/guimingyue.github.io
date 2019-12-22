@@ -1,7 +1,7 @@
 # Site settings
 title: Guimy
 #email: your-email@domain.com
-description:  Ever Tried. Ever failed. No matter. Try Again. Fail again. Fail better
+description:  Ever Tried. Ever failed. No matter. Try Again. Fail again. Fail better.
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: guimy.me # the base hostname & protocol for your site
 #twitter_username: jekyllrb
