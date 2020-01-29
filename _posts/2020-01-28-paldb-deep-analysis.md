@@ -8,7 +8,7 @@ category: PalDB
 PalDB 是 LinkedIn 开源的一个嵌入式的键值数据库，使用 Java 语言编写，GitHub 地址是 [https://github.com/linkedin/PalDB](https://github.com/linkedin/PalDB)，但是与 leveldb 等键值数据库不同的是，PalDB 只支持写入一次数据，并且写入过程中仅仅只能写入不支持读数据操作。所以其使用场景就是数据写入一次后，后续只需要读取。LinkedIn 使用其来存储[side data](https://github.com/linkedin/PalDB#what-is-it-suitable-for)。
 
 ## PalDB 的使用
-使用 PalDB 时，会将其嵌入到一个应用中，该应用汇调用 PalDB 的接口将键值对写入到文件中。一个 PalDB 数据文件，仅支持写入一次，写入后的数据供嵌入 PalDB 的应用来读取，所以 PalDB 的写入和读取的示例如下。
+使用 PalDB 时，会将其嵌入到一个应用中，该应用会调用 PalDB 的接口将键值对写入到文件中。一个 PalDB 数据文件，仅支持写入一次，写入后的数据供嵌入 PalDB 的应用来读取，所以 PalDB 的写入和读取的示例如下。
 
 * 写入
 ```java 
