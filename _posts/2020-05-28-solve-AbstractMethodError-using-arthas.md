@@ -47,7 +47,7 @@ class-loader      +-org.apache.catalina.loader.ParallelWebappClassLoader
 ```shell
 watch package.a.b.c methodd "{params,returnObj}" -x 2 
 ```
-通过该命令可以看到出错前方法调用的完整 json 参数，结合代码里的属性，可知引起报错的应该是一个 `org.codehaus.jackson.node.TextNode` 类的对象，而该类又是 JsonNode 的子类。在 jackson-mapper-asl-1.8.8.jar 中，TextNode 类是不存在 `asText` 方法的，所以再调用该方法时就报了 `java.lang.AbstractMethodError` 这个错误。 再看看 JsonNode 所在的 jar 包的是 json-core-lgpl-1.9.13.jar，所以错误就非常明显了：JsonNode 类中有 asText 方法，而创建出来的子类 TextNode 对象却没有对应的实现方法。<br />
+通过该命令可以看到出错前方法调用的完整 json 参数，结合代码里的属性，可知引起报错的应该是一个 `org.codehaus.jackson.node.TextNode` 类的对象，而该类又是 JsonNode 的子类。在 jackson-mapper-asl-1.8.8.jar 中，TextNode 类是不存在 `asText` 方法的，所以再调用该方法时就报了 `java.lang.AbstractMethodError` 这个错误。 再看看 JsonNode 所在的 jar 包的是 json-core-lgpl-1.9.13.jar，所以错误就非常明显了：JsonNode 类中有 asText 方法，而子类 TextNode 却没有对应的实现方法。<br />
 
 <a name="ISdhF"></a>
 ## 总结
