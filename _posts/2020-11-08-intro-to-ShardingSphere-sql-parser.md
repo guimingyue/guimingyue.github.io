@@ -1,6 +1,12 @@
-# ShardingSphere sql parser介绍
+---
+layout: post
+title:  ShardingSphere sql parser介绍
+category: ShardingSphere
+---
+
 
 ShardingSphere 的 SQL parser 是基于 ANTLR 实现的，整体实现还算简单，花了点时间看了这部分代码，记录下来。
+
 ## 基于 SPI 实现扩展
 ShardingSphere 源码中，shardingsphere-sql-parser-spi 这个 module 利用 Java 的 SPI 机制定义了 parser 的扩展点。定义了 `org.apache.shardingsphere.sql.parser.spi.SQLParserFacade` 和 `org.apache.shardingsphere.sql.parser.spi.SQLVisitorFacade` 两个扩展点，其作用主要是定义不同数据库的 SQL 语言的解析接口，最终转换成 ShardingSphere 自定义的 AST：
 
