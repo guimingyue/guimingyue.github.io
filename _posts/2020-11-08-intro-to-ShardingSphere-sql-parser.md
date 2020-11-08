@@ -8,7 +8,7 @@ category: ShardingSphere
 ShardingSphere 的 SQL parser 是基于 ANTLR 实现的，整体实现还算简单，花了点时间看了这部分代码，记录下来。
 
 ## 基于 SPI 实现扩展
-ShardingSphere 源码中，shardingsphere-sql-parser-spi 这个 module 利用 Java 的 SPI 机制定义了 parser 的扩展点。定义了 `org.apache.shardingsphere.sql.parser.spi.SQLParserFacade` 和 `org.apache.shardingsphere.sql.parser.spi.SQLVisitorFacade` 两个扩展点，其作用主要是定义不同数据库的 SQL 语言的解析接口，最终转换成 ShardingSphere 自定义的 AST：
+ShardingSphere 源码中，shardingsphere-sql-parser-spi 这个 module 利用 Java 的 SPI 机制定义了 parser 的扩展点，定义了 `org.apache.shardingsphere.sql.parser.spi.SQLParserFacade` 和 `org.apache.shardingsphere.sql.parser.spi.SQLVisitorFacade` 两个扩展点，其作用主要是定义不同数据库的 SQL 语言的解析接口，最终转换成 ShardingSphere 自定义的 AST：
 
 
 - `SQLParserFacade`  定义 SQL 解析的扩展点，用于解析文本 SQL，最终返回 antlr 的 AST。
@@ -108,6 +108,7 @@ private static <T> ParseTreeVisitor<T> createParseTreeVisitor(final SQLVisitorFa
 SQLVisitorFacadeRegistry 基于 Java 的 SPI 机制实现了 Visitor 的扩展，可以遍历整个 ANTLR 的 AST，对其做遍历的处理，比如在 ShardingSphere 中将各种不同的数据库的 SQL 语句的 ANTLR 的 AST 转换成 ShardingSphere 定义的 AST，如 `MySQLStatementSQLVisitorFacade` ，`OracleFormatSQLVisitorFacade` 等。
 
 
-## Reference 
-antlr：[https://www.antlr.org/](https://www.antlr.org/)
-ShardingSphere：[https://shardingsphere.apache.org/](https://shardingsphere.apache.org/)
+## Reference
+ 
+* antlr：[https://www.antlr.org/](https://www.antlr.org/)
+* ShardingSphere：[https://shardingsphere.apache.org/](https://shardingsphere.apache.org/)
