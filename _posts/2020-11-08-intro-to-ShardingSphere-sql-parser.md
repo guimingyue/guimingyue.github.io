@@ -107,6 +107,9 @@ private static <T> ParseTreeVisitor<T> createParseTreeVisitor(final SQLVisitorFa
 ```
 SQLVisitorFacadeRegistry 基于 Java 的 SPI 机制实现了 Visitor 的扩展，可以遍历整个 ANTLR 的 AST，对其做遍历的处理，比如在 ShardingSphere 中将各种不同的数据库的 SQL 语句的 ANTLR 的 AST 转换成 ShardingSphere 定义的 AST，如 `MySQLStatementSQLVisitorFacade` ，`OracleFormatSQLVisitorFacade` 等。
 
+总结
+
+这个 SQL Parser 还是比较简单的，主要就是基于 ANTLR 实现了 SQL 解析和 AST 的转换。通过定义 parser 和 visitor 的扩展点，ShardingSphere 就可以方便的扩展出对不同类型的数据库方言的支持。​ShardingSphere 通过定义出一套 AST，后面就可以基于这套 AST 生成关系代数表达式了。
 
 ## Reference
  
