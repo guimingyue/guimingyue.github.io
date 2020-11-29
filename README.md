@@ -1,1 +1,1 @@
-my github pages: guimingyue.github.io
+my github pages: guimy.me
