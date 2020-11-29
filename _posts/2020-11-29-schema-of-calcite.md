@@ -1,7 +1,4 @@
 
-layout: post
-- title:  Calcite Schema
-category: calcite
 
 
 数据库的 schema 是什么  数据库系统概念和实现
