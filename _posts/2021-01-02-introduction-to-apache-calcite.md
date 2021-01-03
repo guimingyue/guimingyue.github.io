@@ -35,7 +35,7 @@ SqlNode 是对 Calcite 解析器的结果的 AST 的抽象，它的子类有 Sql
 
 通过 `parseQuery` 方法解析出来的 SqlNode 对象，如图 2 所示
 
-![SQL](/images/introduction_calcite/sql_node_object.png)
+![sql node object](/images/introduction_calcite/sql_node_object.png)
 *图2 SqlNode Object*
 
 ### 查询优化器中的基本概念
@@ -73,7 +73,8 @@ RelNode 表示一个关系表达式， 在 Calcite 中是用于表示关系代�
 
 常见的关系代数表达式如图 3 所示。
 
-![SQL](/images/introduction_calcite/relation_expression.jpg)
+![relation expression](/images/introduction_calcite/relation_expression.jpg) 
+
 *图3 SqlNode Object*
 
 
