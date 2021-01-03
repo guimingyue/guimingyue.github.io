@@ -31,12 +31,12 @@ Calcite 的官方文档的一句话定义是：一个动态数据管理框架（
 SqlNode 是对 Calcite 解析器的结果的 AST 的抽象，它的子类有 SqlIdentifier，SqlSelect，SqlOrderBy 等等，通过 `org.apache.calcite.sql.parser.SqlParser#parseQuery()` 接口就能解析一条 SQL 语句，并得到该 SQL 语句的 AST 的 SqlNode 对象。图 1 所示是一条 SQL 语句的 AST 的各个组成部分。
 
 ![SQL](/images/introduction_calcite/sql_node.png)
-[图1 SqlNode]
+*图1 SqlNode*
 
 通过 `parseQuery` 方法解析出来的 SqlNode 对象，如图 2 所示
 
 ![SQL](/images/introduction_calcite/sql_node_object.png)
-[图2 SqlNode Object]
+*图2 SqlNode Object*
 
 ### 查询优化器中的基本概念
 
@@ -73,7 +73,7 @@ RelNode 表示一个关系表达式， 在 Calcite 中是用于表示关系代�
 
 常见的关系代数表达式如图 3 所示。
 ![SQL](/images/introduction_calcite/relation_expression.jpg)
-[图3 SqlNode Object]
+*图3 SqlNode Object*
 
 
 #### RelTrait 与 RelTraitDef
