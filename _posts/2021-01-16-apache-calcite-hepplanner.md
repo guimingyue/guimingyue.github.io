@@ -66,17 +66,27 @@ LogicalProject(order_id=[$0], order_id0=[$0], user_id=[$1], status=[$6])
 
 ```
 
-可以看到，Filter 条件已经被下推到 JOIN 下面了
+可以看到，Filter 条件已经被下推到 Join 下面了，下面的算子执行时会提前将不符合条件的数据给过滤掉，经过这样的下推优化，对于 Join 的执行，就能减少 Join 处理的数据量。
 
 ### HepPlanner 核心概念
 
-Calcite HepPlanner 优化流程中，首先是将关系代数表达式的树形结构转换成一个图形结构，再通过遍历加入到 HepPlanner 中的规则集合，对于每个规则集合应用到初始化时生成的图形结构中。
+HepPlanner 优化流程是对一个有向图应用规则的过程，而这个有向图则是在设置关系代数表达式的过程中生成的（`setRoot`）。在优化过程中，首先是将关系代数表达式的树形结构转换成一个图形结构，再通过遍历加入到 HepPlanner 中的规则集合，对于每个规则集合应用到上述生成的图形结构中。
 
 #### DirectedGraph
 
-Calcite HepPlanner 在初始化时（`org.apache.calcite.plan.hep.HepPlanner#setRoot`），会将逻辑关系代数表达式（`RelNode`）转换成一个图形结构（`DirectedGraph`的对象）。为什么需要将 RelNode 因为 HepPlanner 在应用规则优化的过程中会使用新创建的关系代数表达式（RelNode）替换掉旧的，而 Calcite 定义的关系代数表达式本质上是一颗从上到下的树形结构，在 RelNode 中无法知道父节点是什么，所以通过将 RelNode 转换成图，可以有效的解决这种问题，查找父节点的代码可以参考 `org.apache.calcite.plan.hep.HepPlanner#applyTransformationResults` 该方法是在应用完规则以后，替换旧的关系代数表达式中节点的方法。
+`HepPlanner` 在初始化关系代数表达式时（`org.apache.calcite.plan.hep.HepPlanner#setRoot`），会将逻辑关系代数表达式（`RelNode`）转换成一个图形结构（`DirectedGraph`的对象）。为什么需要将`RelNode`转换成图呢？因为 HepPlanner 在应用规则优化的过程中会使用新创建的关系代数表达式（RelNode）替换掉旧的，而 Calcite 定义的关系代数表达式本质上是一颗从上到下的树形结构，在 RelNode 中无法知道父节点是什么，所以通过将 RelNode 转换成图节点，可以有效的解决这种问题。查找父节点的代码可以参考 `org.apache.calcite.plan.hep.HepPlanner#applyTransformationResults` 该方法是在应用完规则以后，使用转换得到的新的节点，替换旧的关系代数表达式中节点的方法。
 
 `DirectedGraph`的默认实现是`DefaultDirectedGraph`，在`DefaultDirectedGraph`中有代表所有节点的属性`vertexMap`和代表所有边的属性`edges`，它们的元素分别为`HepRelVertex` 和 `DefaultEdge`。其中`vertexMap`属性是 Map 结构，其键类型是`HepRelVertex`，值的类型是`VertexInfo`，它表示每个节点的出线和入线。
+
+比如，对于上述的 SQL 生成的关系代数表达式，其树形结构，如下图所示。
+
+![RelNode of Logical Plan](/images/hep_intrl/algebra-rel-pre-optimize.png)
+
+各个节点与上述优化前的关系代数表达式对应（算子名称去掉了 Logical 前缀）。而转换成图形结构后，如下图所示。
+
+![RelNode of Logical Plan](/images/hep_intrl/algebra_hep_vertex.png)
+
+每个节点都有出线和入线（图中表示为双箭头）。
 
 
 ### HepPlanner 优化流程
@@ -85,7 +95,7 @@ HepPlanner 分为初始化和优化两个流程，初始化会将关系代数表
 
 #### 初始化`setRoot`
 
-`setRoot`核心逻辑是调用方法`org.apache.calcite.plan.hep.HepPlanner#addRelToGraph`将当前的 `RelNode`添加到图（`graph`）中，对于每个`RelNode`都会先将其子节点加入到图中，再将当前节点生成节点（`HepRelVertex`）和边（`DefaultEdge`）加入到图中。从`HepRelVertex`的代码可以看到，其属性`currentRel`就是当前节点。而`currentRel`的子节点（通过`getInputs`方法获取）是`HepRelVertex`类型。图结构生成完成以后，会将该图的根节点返回，作为优化流程（`findBestPlan`）的输入节点。
+`setRoot`核心逻辑是调用方法`org.apache.calcite.plan.hep.HepPlanner#addRelToGraph`将当前的 `RelNode`添加到图（`graph`）中，对于每个`RelNode`都会先将其子节点加入到图中，再将当前节点生成节点（`HepRelVertex`）和边（`DefaultEdge`）加入到图中。从`HepRelVertex`定义的代码可以看到，其属性`currentRel`就是当前节点。而`currentRel`的子节点（通过`getInputs`方法获取）是`HepRelVertex`类型。图结构生成完成以后，会将该图的根节点返回，作为优化流程（`findBestPlan`）的输入节点。
 
 
 #### findBestPlan
