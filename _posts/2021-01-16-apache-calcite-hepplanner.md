@@ -6,37 +6,71 @@ category: Calcite
 
 ## 什么是启发式优化
 
-启发式优化本质上是给定一组优化规则，通过将这组规则运用到关系代数表达式的每个节点上，从而优化关系代数表达式。而运用规则时，则会先判断规则是否适用于当前的关系代数表达式的节点，如果适用，则运用规则（执行转换），否则就继续试探下一个节点。启发式规则是前人总结出来的宝贵经验，运用该规则优化一定会带来优化的收益。
+启发式优化（heuristic）是数据库查询优化中常用的而一种技术手段，也称为基于规则的优化（RBO）。其使用场景常常是作为基于代价的优化（CBO）的一种补充，因为基于代价的优化的一个缺点是优化本身是有代价的，在等价集合中找到最优的计划是仍然需要很多计算代价，所以基于代价的优化器可以使用启发式的方法来减少优化代价。比如 CBO 优化器在执行代价优化之前，会有一个查询改写（rewrite）的阶段，这个阶段就应用了启发式的优化手段。
+启发式优化本质上是给定一组优化规则，通过将这组规则运用到关系代数表达式的每个节点上，从而优化关系代数表达式。而运用规则时，则会先判断规则是否适用于当前的关系代数表达式的节点，如果适用，则运用规则（执行转换），否则就继续试探下一个节点。这些规则是前人总结出来的宝贵经验，运用该规则优化通会带来优化的收益，但也不总是会带来优化收益。
 
 
-## Calcite 的启发式优化实现 HepPlanner
+## Calcite 的启发式优化实现
 
-### 如何使用 HepPlanner
+在 Calcite 中，`HepPlanner` 是查询优化器（`RelOptPlanner`）的一个启发式优化实现。
 
-如下代码片段是 HepPlanner 的使用方式，详细代码请参考 [AbstractPlanner#rewrite](https://github.com/guimingyue/shardingsphere/blob/master/shardingsphere-infra/shardingsphere-infra-optimize/src/main/java/org/apache/shardingsphere/infra/optimize/planner/AbstractPlanner.java)。[`PlannerRules.HEL_RULES`](https://github.com/guimingyue/shardingsphere/blob/master/shardingsphere-infra/shardingsphere-infra-optimize/src/main/java/org/apache/shardingsphere/infra/optimize/planner/PlannerRules.java) 是一个启发式优化规则的集合。
+### 使用 HepPlanner
+
+如下代码片段是 `HepPlanner` 的使用方式，详细代码请参考 [HepPlannerTest](https://github.com/guimingyue/shardingsphere/blob/optimizer-demo/shardingsphere-infra/shardingsphere-infra-optimizer/src/test/java/org/apache/shardingsphere/infra/optimizer/planner/HepPlannerTest.java)。
 
 ```java
 HepProgramBuilder hepProgramBuilder = HepProgram.builder();
-// 添加优化规则，PlannerRules.HEL_RULES 是预先定义好的优化规则集合
-for(Collection<? extends RelOptRule> rules : PlannerRules.HEL_RULES) {
-    hepProgramBuilder.addGroupBegin();
-    rules.forEach(hepProgramBuilder::addRuleInstance);
-    hepProgramBuilder.addGroupEnd();
-}
-// 创建 HepPlanner 对象
+hepProgramBuilder.addGroupBegin();
+hepProgramBuilder.addRuleCollection(ImmutableList.of(CoreRules.FILTER_INTO_JOIN));
+hepProgramBuilder.addGroupEnd();
+
 HepPlanner hepPlanner = new HepPlanner(hepProgramBuilder.build(), null, true, null, RelOptCostImpl.FACTORY);
-// 初始化待优化的逻辑关系代数表达式
 hepPlanner.setRoot(logicalRelNode);
-// 执行优化，rewritedRelNode 就是优化完的关系代数表达式
-RelNode rewritedRelNode = hepPlanner.findBestExp();
+RelNode best = hepPlanner.findBestExp();
+
+```
+使用 HepPlanner 分四步：
+0. 通过 `HepProgramBuilder`构建一个`HepProgram`，它制定了在优化过程中，使用规则的顺序。
+1. 创建 `HepPlanner` 对象。
+2. 设置待优化的关系代数表达式（`setRoot`）。
+3. 执行优化（`findBestExp`），该方法计算得到的就是优化完的执行计划。
+
+整个优化流程就是应用规则的过程，在上面的代码片段中仅仅使用了一个优化规则 `CoreRules.FILTER_INTO_JOIN`，该优化规则的作用是将 Join 上面的 Filter 中可以下推到 Join 下面的条件，下推下去。关于规则，可以参考文章 [Apache Calcite 核心概念梳理](http://guimy.me/other/2021/01/02/introduction-to-apache-calcite.html#reloptrule-和-reloptplanner)。
+
+比如，对于如下 SQL 语句，
+
+```sql
+select o1.order_id, o1.order_id, o1.user_id, o2.status from t_order o1 join t_order_item o2 
+on o1.order_id = o2.order_id where o1.status='FINISHED' and o2.order_item_id > 1024 and 1=1
+```
+
+由 AST 转换而成的关系代数表达式为。
+
+```sql
+LogicalProject(order_id=[$0], order_id0=[$0], user_id=[$1], status=[$6])
+  LogicalFilter(condition=[AND(=($2, 'FINISHED'), >($3, 1024), =(1, 1))])
+    LogicalJoin(condition=[=($0, $4)], joinType=[inner])
+      LogicalTableScan(table=[[logical_db, t_order]])
+      LogicalTableScan(table=[[logical_db, t_order_item]])
+```
+
+经过以上测试代码优化后的关系代数表达式为。
+
+```sql
+LogicalProject(order_id=[$0], order_id0=[$0], user_id=[$1], status=[$6])
+  LogicalJoin(condition=[=($0, $4)], joinType=[inner])
+    LogicalFilter(condition=[=($2, 'FINISHED')])
+      LogicalTableScan(table=[[logical_db, t_order]])
+    LogicalFilter(condition=[>($0, 1024)])
+      LogicalTableScan(table=[[logical_db, t_order_item]])
 
 ```
 
-最后，通过`findBestExp`方法计算得到的就是优化完的执行计划。整个优化流程就是应用规则的过程。关于规则，可以参考文章 [Apache Calcite 核心概念梳理](http://guimy.me/other/2021/01/02/introduction-to-apache-calcite.html#reloptrule-和-reloptplanner)。
+可以看到，Filter 条件已经被下推到 JOIN 下面了
 
 ### HepPlanner 核心概念
 
-Calcite HepPlanner 整个优化流程，首先是将关系代数表达式的树形结构转换成一个图形结构，再通过遍历加入到 HepPlanner 中的规则集合，对于每个规则集合应用到初始化时生成的图形结构中。
+Calcite HepPlanner 优化流程中，首先是将关系代数表达式的树形结构转换成一个图形结构，再通过遍历加入到 HepPlanner 中的规则集合，对于每个规则集合应用到初始化时生成的图形结构中。
 
 #### DirectedGraph
 

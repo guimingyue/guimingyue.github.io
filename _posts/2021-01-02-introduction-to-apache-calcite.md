@@ -6,7 +6,7 @@ category: other
 
 ## 什么是 Apache Calcite
 
-Calcite 的官方文档的一句话定义是：一个动态数据管理框架（a dynamic data management framework）。这个概念比较抽象，很难理解，那先来看看它提供了那些功能点：
+Calcite 的官方文档的一句话定义是：一个动态数据管理框架（a dynamic data management framework）。这个概念比较抽象，很难理解，那先来看看它提供了哪些功能点：
 
 * 标准的 SQL 解析器，Calcite 定义了一套 SQL 语言的 AST（Abstract Syntax Tree），并且基于 javacc 实现了一个标准的 SQL 解析器。
 * 基于关系代数的查询优化框架，Calcite 实现了 Volcano/Cascades 优化器模型，提供了基于规则（RBO）和基于代价（CBO）的优化器框架，并且提供了一些常见的优化规则。
@@ -80,7 +80,7 @@ RelNode 表示一个关系表达式， 在 Calcite 中是用于表示关系代�
 
 #### RelTrait 与 RelTraitDef
 
-`RelTrait` 表示 RelNode 的一种性质，比如是否需要排序，它使用时由 `RelTraitDef` 来定义，目前分为三类：
+`RelTrait` 表示 RelNode 的一种性质，用于指定物理执行属性，比如是否需要排序，数据的分布（distribution），它使用时由 `RelTraitDef` 来定义，目前分为三类：
 
 * ConventionTraitDef，表示由何种数据处理引擎处理，对应的 `RelTrait` 类型为 `Convention`，逻辑执行计划中，其值默认为 `org.apache.calcite.plan.Convention#NONE`，物理执行计划的对应的值在优化前，通过方法 `org.apache.calcite.plan.RelOptPlanner#changeTraits` 指定，Calcite 已经定义的有 `EnumerableConvention`，`BindableConvention`，`JdbcConvention` 等。如果为 `EnumerableConvention`，那么生成的物理执行计划将由 Calcite 的 linq4j 引擎执行，此外每种 `Convention` 都对应具体的关系表达式的转换规则。
 * RelCollationTraitDef，表示排序规则的定义，对应的 `RelTrait` 为 `RelCollation`。比如对于排序表达式（也称算子） `org.apache.calcite.rel.core.Sort`，就存在一个 `RelCollation` 类型的属性 collation。
@@ -91,7 +91,7 @@ RelNode 表示一个关系表达式， 在 Calcite 中是用于表示关系代�
 
 ### RelOptRule 和 RelOptPlanner
 
-`RelOptRule` 和 `RelOptPlanner` 就是 Calcite 定义的优化框架的两个核心概念，简单的理解就是优化器框架（RelOptPlanner）通过执行优化规则（RelOptRule）来优化关系代数表达式。比如对于上面列出的 SQL 逻辑执行计划，如果直接执行这个逻辑执行计划，那么它表示先扫描两个表，在对两个表做 join，对 join 完成的结果，再做数据过滤，最后做投影和排序。有没有更有效的执行方式呢？当然有，因为 join 的执行方式通常是对两个表的数据按照 join 条件做连接，如果可以减少 join 的两个表的数据量，拿就可以 join 操作的效率就会提高。可以看到 LogicalFilter 中的条件其实可以直接放在 join 之前做掉，这样 Join 的数据就是执行了过滤条件后的目标数据，所以可以将逻辑执行计划变成如下逻辑执行计划。
+`RelOptRule` 和 `RelOptPlanner` 就是 Calcite 定义的优化框架的两个核心概念，简单的理解就是优化器框架（RelOptPlanner）通过执行优化规则（RelOptRule）来优化关系代数表达式。比如对于上面列出的 SQL 逻辑执行计划，如果直接执行这个逻辑执行计划，那么它表示先扫描两个表，在对两个表做 join，对 join 完成的结果，再做数据过滤，最后做投影和排序。有没有更有效的执行方式呢？当然有，因为 join 的执行方式通常是对两个表的数据按照 join 条件做连接，如果可以减少 join 的两个表的数据量，那 join 操作的效率就会提高。可以看到 LogicalFilter 中的条件其实可以直接放在 join 之前做掉，这样 Join 的数据就是执行了过滤条件后的目标数据，所以可以将逻辑执行计划变成如下逻辑执行计划。
 
 ```sql
 LogicalSort(sort0=[$0], dir0=[DESC])
@@ -103,7 +103,7 @@ LogicalSort(sort0=[$0], dir0=[DESC])
         LogicalTableScan(table=[[logical_db, t_order_item]])
 ```
 
-这种优化方式称为条件下推（Push Down），也就是将 join 上层过滤条件下推到 join 的下层，以减小 join 操作的数据量。如果 join 操作所在的机器与数据不在同一台机器上，那么这种下推优化还可以减少网络传输的数据两，这也是分布式场景下常见的一种优化手段。
+这种优化方式称为条件下推（Push Down），也就是将 join 上层过滤条件下推到 join 的下层，以减小 join 操作的数据量。如果 join 操作所在的机器与数据不在同一台机器上，那么这种下推优化还可以减少网络传输的数据量，这也是分布式场景下常见的一种优化手段。
 
 上述的优化由 Calcite 的 `HepPlanner` 执行 `FilterIntoJoinRule` 完成。`FilterIntoJoinRule` 就是 `RelOptRule` 的一个实现类，它的作用就是将 join 上的 Filter 条件下推到 join 之下，Calcite 内置了非常多的优化规则，具体见包 `org.apache.calcite.rel.rules`。`HepPlanner` 是  `RelOptPlanner` 的一种实现，它是一种启发式（Heuristic）的优化方式，所谓的启发式简单来说就是告诉优化器，存在这些优化手段，遇到了匹配的关系代数表达式，就可以执行对应的规则了。
 
