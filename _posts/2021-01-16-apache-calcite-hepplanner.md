@@ -80,11 +80,11 @@ HepPlanner 优化流程是对一个有向图应用规则的过程，而这个有
 
 比如，对于上述的 SQL 生成的关系代数表达式，其树形结构，如下图所示。
 
-![RelNode of Logical Plan](/images/hep_intrl/algebra-rel-pre-optimize.png)
+![RelNode of Logical Plan](/images/hep_intro/algebra-rel-pre-optimize.png)
 
 各个节点与上述优化前的关系代数表达式对应（算子名称去掉了 Logical 前缀）。而转换成图形结构后，如下图所示。
 
-![RelNode of Logical Plan](/images/hep_intrl/algebra_hep_vertex.png)
+![RelNode of Logical Plan](/images/hep_intro/algebra_hep_vertex.png)
 
 每个节点都有出线和入线（图中表示为双箭头）。
 
