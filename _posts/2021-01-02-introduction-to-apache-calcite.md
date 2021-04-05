@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Apache Calcite 核心概念梳理
-category: other
+category: Calcite
 ---
 
 ## 什么是 Apache Calcite
