@@ -18,7 +18,7 @@ Apache ShardingSphere 的官方定义是一套开源的分布式数据库解决�
 基于这些，在 Sharding 的计算层的优化策略是，能够下推到分库中的操作尽量下推到分库中执行，无法下推的就在计算层实现。比如，如果两张表是 ShardingSphere 中的绑定表，那 INNER JOIN 是可以下推到分库中执行的，而如果两张表的拆分算法不一样，那么只能在上层处理 join。所以如果要在计算层要支持跨库 join，就需要在计算层 SQL 解析，SQL 优化和执行。
 SQL 解析 ShardingSphere 已经有了基于 Antlr 的实现，SQL 优化可以基于 Apache Calcite 来做，SQL 的执行需要基于单独进行实现。整个 SQL 层基于 Calcite 来实现，有一些准备工作，比如将 ShardingSphere 的 AST 转换成 Calcite 能识别的 AST，这样才能交给 Calcite 去转换成逻辑执行计划，进而做 SQL 优化。基于 Calcite 的 SQL 优化主要的工作就是根据优化策略实现 Calcite 的优化规则。而 SQL 的执行则可以基于 Volcano 执行器模型来做。总结起来，整个执行过程可以用下图表示。
 
-![SQL](/images/ss_optimizer/sql_execution.png.png)
+![SQL](/images/ss_optimizer/sql_execution.png)
 
 ## 查询优化器
 
@@ -35,20 +35,36 @@ Sharding 模式的查询优化属于一种分布式查询优化，而分布式�
 逻辑查询计划重写是一种启发式的手段，也称为基于规则的优化（RBO），会按照优化规则将关系代数表达式中的部分算子改写，输出一个改写后的关系代数表达式，这些规则必须是确保新生成的整个表达式是与重写前的关系代数表达式等价的。
 Sharding 模式的逻辑查询计划重写的优化策略就是下推，一种是算子的下推，典型的是将 join 之上的 filter 下推到 join 下面。另一种是一部分算子整体下下推，这一点与存储计算分离的分布式数据库不同的一点是，分库分表模型的存储层是有计算能力的，所以可以将 tablescan + filter 一起下推到分库上执行，也可以将符合条件的join下推到分库上执行，所以定义了新的逻辑算子 LogicalScan，用于表示可以下推到分库上执行的算子集合。在执行时会将整个 LogicalScan （对应的物理算子 SSScan）算子转换成能在分库上执行的 SQL 语句。
 
+比如，对于如下 SQL 语句，
 
+```sql
+select o1.order_id, o1.order_id, o1.user_id, o2.status from t_order o1 join t_order_item o2 
+on o1.order_id = o2.order_id where o1.status='FINISHED' and o2.order_item_id > 1024 and 1=1
+```
+
+经过转换后，其逻辑执行计划示意图如下图左边所示。Filter 算子在 Join 之上，经过重写优化，可能会被转换为下图右边的形式。图中的 LogicalScan 算子就是可以下推到分库上执行的 SQL 算子。
+
+![SQL](/images/ss_optimizer/optimizer_rewrite.png)
 
 ### 基于代价的优化
 
-由于还没有引入统计信息，所以只是利用 Calcite 的基于代价的优化器 VolcanoPlanner 实现了逻辑执行计划到物理执行计划的转换。
+由于还没有引入统计信息，所以只是利用 Calcite 的基于代价的优化器 VolcanoPlanner 实现了逻辑执行计划到物理执行计划的转换。比如对于上面的 SQL 语句对应的重写后的逻辑执行计划，最终转换而成的物理执行计划可能如下图所示。
 
+![SQL](/images/ss_optimizer/ss_optimize_convert.png)
+
+图中右边的就是物理执行计划，SSScan 算子与 LogicalScan 对应，它表示一个下发到分库上执行的执行计划，最终会转换成与分库的数据库相关的 SQL 语句去执行，比如如果是 MySQL，那么就会转换成 MySQL 对应的 SQL 语句。SSNestedLoopJoin 就是 join 对应的物理算子，该算子会使用 nested loop join 算法来做量表的连接。
 
 ## 执行器
 
 执行器是一个标准的 Volcano 执行器模型，每一种物理算子都会对应一个执行算法实现，执行器的接口是 `Executor`。比如 ，通过 `moveNext` 函数，定义访问下一行数据的操作，通过`current`函数定义访问当前的行。
+对应于上述的物理执行计划的 Volcano 执行器模型结构如下图所示。ProjectExecutor 和 NestedLoopJoinExecutor 分别对应与物理执行计划中的物理算子，而 SSScan 则对应与 MultiExecutor 和 JDBCQueryExecutor。因为 SSScan 为下推到分库上执行的语句，但是可能会下推到多个分库，所以对于下推到多个分库，使用 MultiExecutor 来封装，对上层只暴露一个 Executor 对象。JDBCQueryExecutor 下层是 QueryResultExecutor，其中 QueryResultExecutor 是对 ShardingSphere 在分库上执行结果 QueryResult 的 Executor 包装。
+
+![SQL](/images/ss_optimizer/physical_executor.png)
+
 
 ## 总结
 
-TODO
+本文首先介绍了在基于 Sharding 模式下做分布式查询优化所需要解决的问题，然后介绍了基于 Apache Calcite 的查询优化的设计以及实现思路，包括逻辑执行计划重写和物理执行计划的转换，最后介绍了基于 Volcano 执行器模型的执行器框架。做到这一步就实现了一个简单的查询优化器以及对应的执行器，但是查询优化器和执行器远远没有这么简单，比如如何做到基于代价的优化，如何实现 Hash 以及流式的聚合等等，这些都待以后来逐步实现。
 
 ## Reference
 
