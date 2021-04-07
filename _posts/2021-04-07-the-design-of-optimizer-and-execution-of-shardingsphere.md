@@ -18,7 +18,7 @@ Apache ShardingSphere 的官方定义是一套开源的分布式数据库解决�
 基于这些，在 Sharding 的计算层的优化策略是，能够下推到分库中的操作尽量下推到分库中执行，无法下推的就在计算层实现。比如，如果两张表是 ShardingSphere 中的绑定表，那 INNER JOIN 是可以下推到分库中执行的，而如果两张表的拆分算法不一样，那么只能在上层处理 join。所以如果要在计算层要支持跨库 join，就需要在计算层 SQL 解析，SQL 优化和执行。
 SQL 解析 ShardingSphere 已经有了基于 Antlr 的实现，SQL 优化可以基于 Apache Calcite 来做，SQL 的执行需要基于单独进行实现。整个 SQL 层基于 Calcite 来实现，有一些准备工作，比如将 ShardingSphere 的 AST 转换成 Calcite 能识别的 AST，这样才能交给 Calcite 去转换成逻辑执行计划，进而做 SQL 优化。基于 Calcite 的 SQL 优化主要的工作就是根据优化策略实现 Calcite 的优化规则。而 SQL 的执行则可以基于 Volcano 执行器模型来做。总结起来，整个执行过程可以用下图表示。
 
-![SQL](/images/ss_optimizer/sql_execution.png)
+![SQL](/images/ss_optimizer/sql_execution.png.png)
 
 ## 查询优化器
 
