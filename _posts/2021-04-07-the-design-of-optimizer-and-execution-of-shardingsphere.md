@@ -42,7 +42,7 @@ select o1.order_id, o1.order_id, o1.user_id, o2.status from t_order o1 join t_or
 on o1.order_id = o2.order_id where o1.status='FINISHED' and o2.order_item_id > 1024 and 1=1
 ```
 
-经过转换后，其逻辑执行计划示意图如下图左边所示。Filter 算子在 Join 之上，经过重写优化，可能会被转换为下图右边的形式。图中的 LogicalScan 算子就是可以下推到分库上执行的 SQL 算子。
+经过转换后，其逻辑执行计划示意图如下图左边所示。Filter 算子在 Join 之上，经过重写优化，可能会被转换为下图右边的形式，Filter 被下推到 Join 下面，并且 Filter 可以和下面的 TableScan 一起下推成 LogicalScan。图中的 LogicalScan 算子就是可以下推到分库上执行的逻辑算子。如果 Join 的两张表是 ShardingSphere 的绑定表，并且是可以下推到分库上执行的 Join（比如 INNER JOIN），那么还可以继续下推，将左右两边的 LogicalScan 和 Join 一起下推成一个新的 LogicalScan。
 
 ![SQL](/images/ss_optimizer/optimizer_rewrite.png)
 
