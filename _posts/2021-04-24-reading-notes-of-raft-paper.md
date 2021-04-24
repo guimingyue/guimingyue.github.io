@@ -20,7 +20,7 @@ two different configurations overlap during transitions`。这使得整个集群
 
 典型的复制状态机使用复制日志来实现，如图1 所示。每个节点存储的日志包含一些列的命令，每个节点上的日志包含相同的命令，并且命令的顺序也相同，所以每个状态机处理相同序列的命令。
 
-[图1](/images/raft_paper_notes/figure1-replicated-state-machine.png)
+![图1](/images/raft_paper_notes/figure1-replicated-state-machine.png)
 
 一致性算法的作用是使得复制日志保持一致性。服务节点上的一致性模块从客户端接收命令，然后将命令添加到它的日志中。服务节点上的一致性模块它与其他服务节点上的的一致性模块通信，并且保证日志最终包含相同的顺序的请求，即使部分节点宕机。一旦命令顺利复制了，每个服务节点上的状态机都能按照日志的顺序处理他们，最终将结果返回给客户端。所以，这些服务节点表现的像一个单一的，高可用的状态机。
 
