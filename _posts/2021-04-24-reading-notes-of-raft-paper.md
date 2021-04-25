@@ -70,6 +70,18 @@ b. 另一个 candidate 节点称为了 leader 节点，该节点变为 follower�
 
 另外一种情况是，在该一个 Term 周期内，没有节点成为 leader，那么 candidate 节点会增加 Term 并且开始新一次的 Leader election。Raft 使用了随机的 election timeout 来防止下一次仍然没有 leader 选举成功。
 
+### 5.3 Log Replication
+
+当 Leader 接收到客户端命令后，会将命令包装为 log entry 增加到日志条目中，再并行复制给其他（follower）节点，复制给大多数节点（n/2 + 1）成功以后，Leader 会 commit 该 log entry，也就是执行到状态机中。如果 follower 节点宕机或者运行比较慢，Leader 会一直重试复制请求直到所有的 follower 都存储了相同的 log entry。
+
+如下图所示，每个 Log Entry 包含客户端请求的命令和 Leader 接收到客户端命令的 Term 数值，该值会被用于检查 Leader 和 Follower 直接的日志是否一致。每条日志还会包含一个索引（index）数值确定在日志列表中的位置。
+![commited entries](Figure 6)
+
+Leader 节点负责确定日志应用到状态机的时机，该过程也称为 `committed`。Raft 会保证提交的日志条目已持久化，并且最终被状态机执行。当主节点（leader）将日志复制到多数节点之后，会将其提交，如上图所示的索引为 7 的 log entry，该提交过程也会将当前日志之前的日志提交，即使之前的日志是由其他 leader 创建的。一旦 follower 感知到一个 log entry 已经提交了，它也会将其应用到自己的状态机。
+Raft 维护这下面两条日志复制的规则。
+
+* 如果在不同节点上的两条 log entry 有相同的索引（index）和 Term，那么他们存储着相同的（客户端发起的）命令。
+* 如果在不同节点上的两条 log entry 有相同的索引（index）和 Term，那么这两个节点上在该条 log entry 之前的日志是都相同的。
 
 
 
