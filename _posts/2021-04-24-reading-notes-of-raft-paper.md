@@ -20,7 +20,7 @@ two different configurations overlap during transitions`。这使得整个集群
 
 典型的复制状态机使用复制日志来实现，如图1 所示。每个节点存储的日志包含一些列的命令，每个节点上的日志包含相同的命令，并且命令的顺序也相同，所以每个状态机处理相同序列的命令。
 
-![图1](/images/raft_paper_notes/figure1-replicated-state-machine.png)
+![figure 1 replicated state machine](/images/raft_paper_notes/figure1-replicated-state-machine.png)
 
 一致性算法的作用是使得复制日志保持一致性。服务节点上的一致性模块从客户端接收命令，然后将命令添加到它的日志中。服务节点上的一致性模块它与其他服务节点上的的一致性模块通信，并且保证日志最终包含相同的顺序的请求，即使部分节点宕机。一旦命令顺利复制了，每个服务节点上的状态机都能按照日志的顺序处理他们，最终将结果返回给客户端。所以，这些服务节点表现的像一个单一的，高可用的状态机。
 
@@ -75,7 +75,7 @@ b. 另一个 candidate 节点称为了 leader 节点，该节点变为 follower�
 当 Leader 接收到客户端命令后，会将命令包装为 log entry 增加到日志条目中，再并行复制给其他（follower）节点，复制给大多数节点（n/2 + 1）成功以后，Leader 会 commit 该 log entry，也就是执行到状态机中。如果 follower 节点宕机或者运行比较慢，Leader 会一直重试复制请求直到所有的 follower 都存储了相同的 log entry。
 
 如下图所示，每个 Log Entry 包含客户端请求的命令和 Leader 接收到客户端命令的 Term 数值，该值会被用于检查 Leader 和 Follower 直接的日志是否一致。每条日志还会包含一个索引（index）数值确定在日志列表中的位置。
-![commited entries](Figure 6)
+![figure 6 commited entries](/images/raft_paper_notes/figure6-committed_entries.png)
 
 Leader 节点负责确定日志应用到状态机的时机，该过程也称为 `committed`。Raft 会保证提交的日志条目已持久化，并且最终被状态机执行。当主节点（leader）将日志复制到多数节点之后，会将其提交，如上图所示的索引为 7 的 log entry，该提交过程也会将当前日志之前的日志提交，即使之前的日志是由其他 leader 创建的。一旦 follower 感知到一个 log entry 已经提交了，它也会将其应用到自己的状态机。
 Raft 维护这下面两条日志复制的规则。
@@ -85,7 +85,15 @@ Raft 维护这下面两条日志复制的规则。
 
 正常情况下，leader 和 follower 的日志是一致的，所以检查一致性的`AppendEntries`请求不会失败，但是 leader 的失败会导致日志的不一致，下图展示了各种不一致的场景。在 Raft 中，leader 会强制 follower 复制自己的日志，也就是说 follower 中冲突的日志日志会最终被 leader 中相同位置的日志覆盖。这个过程会再一致性检查中完成，RPC 请求为 AppendEntries 类型。leader 为每个 follower 维护着 `nextIndex` 的索引变量，它表示要复制到 follower 的下一个 log entry 的索引（index），初始情况下，leader 会将每个 follower 的`nextIndex`置位当前日志中的最后一个日志的下一个索引（下图中的索引 11），如果 follower 的的日志与 leader 不一致，下一次的一致性检查请求 AppendEntries 就会失败，这样 leader 就会将该 follower 的`nextIndex`减小，然后再执行一致性检查，直到leader 与 follower 的`nextIndex`的之前的日志一致，此时，AppendEntries 请求就会成功，也意味着 follower 中冲突日志会被删除。这样就可以继续执行日志复制的 AppendEntries 请求了。
 
-![Figure 7]()
+![figure 7 ](/images/raft_paper_notes/figure7-log-entries-of-leader.png)
+
+### 5.4 Safty
+
+上面介绍的 leader election 和日志复制这些机制不足以保证每个状态机都按照相同的顺序执行同样的命令，比如 leader 在提交日志时，有个 follower 不可用，然后这个 follower 又被选为了新的 leader 节点，那么已经提交的日志可能被覆盖掉。需要增加一些限制规则来保证命令应用到状态机的正确性。也就是 leader 在某个 Term 一定会包含已经提交的所有日志。
+
+#### 5.4.1 Election 限制
+
+
 
 
 
