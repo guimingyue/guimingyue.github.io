@@ -83,6 +83,10 @@ Raft 维护这下面两条日志复制的规则。
 * 如果在不同节点上的两条 log entry 有相同的索引（index）和 Term，那么他们存储着相同的（客户端发起的）命令。
 * 如果在不同节点上的两条 log entry 有相同的索引（index）和 Term，那么这两个节点上在该条 log entry 之前的日志是都相同的。
 
+正常情况下，leader 和 follower 的日志是一致的，所以检查一致性的`AppendEntries`请求不会失败，但是 leader 的失败会导致日志的不一致，下图展示了各种不一致的场景。在 Raft 中，leader 会强制 follower 复制自己的日志，也就是说 follower 中冲突的日志日志会最终被 leader 中相同位置的日志覆盖。这个过程会再一致性检查中完成，RPC 请求为 AppendEntries 类型。leader 为每个 follower 维护着 `nextIndex` 的索引变量，它表示要复制到 follower 的下一个 log entry 的索引（index），初始情况下，leader 会将每个 follower 的`nextIndex`置位当前日志中的最后一个日志的下一个索引（下图中的索引 11），如果 follower 的的日志与 leader 不一致，下一次的一致性检查请求 AppendEntries 就会失败，这样 leader 就会将该 follower 的`nextIndex`减小，然后再执行一致性检查，直到leader 与 follower 的`nextIndex`的之前的日志一致，此时，AppendEntries 请求就会成功，也意味着 follower 中冲突日志会被删除。这样就可以继续执行日志复制的 AppendEntries 请求了。
+
+![Figure 7]()
+
 
 
 
