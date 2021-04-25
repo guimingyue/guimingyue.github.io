@@ -61,7 +61,14 @@ Raft 算法是用来管理日志复制的（第 2 部分描述）。该算法首
 
 Raft 将时间划分为 term。Term 由一组连续的整数进行编号，每个 Term 开始时会进行选主，在这个过程中一个或多个 candidate 会尝试变成主节点。在某些可能的场景下，一次选主可能不会达成一致，那么这样这个 Term 就不会有主节点产生。Raft 会确保在任一 Term，最多只会有一个主节点。在 Raft 中Term 是一个逻辑时钟，节点会根据 Term 检查收到的信息是否过期，比如主节点是否已经过期。每个节点都会维持一个单调递增的 `current term` 的值，节点在沟通过程中会传递这个值，如果一个节点的 `current term`  小于（与之交流的）另一个节点，那么它会其更新为更大的值，如果一个`candidate`或`leader`发现它的 Term 已经过期了，他会立马将其转变为`follower`状。如果一个节点接收到了带有过期的 term 的请求，它会拒绝这个请求。Raft 节点之间的交流是通过 RPC 进行的，主要两种类型的 RPC，Request Vote RPC 和 Append Entries RPC。
 
+### 5.2 Leader election
 
+Raft 使用心跳机制来触发 Leader election。每个节点启动时处于 follower 状态，并且一直处于 follower 状态，只要他能从 leader 收到心跳请求，否则 follower 会发起新的 leader election，从最后一次收到 leader 请求到发起新的选举的时间称为 election timeout。为了发起 leader election，follower 节点会先增加 Term 并且将节点状态从 follower 改成 candidate，然后并行的向集群中的其他节点发起投票请求（RequestVote RPC）。candidate 在以下两种情况下会改变其状态。
+
+a. 赢得了选举，成为 leader。即获得了大多数的投票（大于等于 2/n + 1)。新的 leader 节点会给其他节点发送心跳来声明其 Leader 角色。
+b. 另一个 candidate 节点称为了 leader 节点，该节点变为 follower。这种情况下 candidate 节点会接收到新的主节点的消息，该消息的 Term 不小于当前 candidate 的 Term。
+
+另外一种情况是，在该一个 Term 周期内，没有节点成为 leader，那么 candidate 节点会增加 Term 并且开始新一次的 Leader election。Raft 使用了随机的 election timeout 来防止下一次仍然没有 leader 选举成功。
 
 
 
