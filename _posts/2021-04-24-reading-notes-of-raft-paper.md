@@ -59,7 +59,7 @@ Raft 算法是用来管理日志复制的（第 2 部分描述）。该算法首
 
 一个 Raft 集群包含多个机器，典型的是 5 个，这样就能够承受有两个节点宕机的风险。在任何时间点一个节点只能是`leader`，`follower`和 `candidate`这三种状态中的一个，并且只会有不超过一个 `leader`。`follower`只能从`leader`接收请求并响应。
 
-Raft 将时间划分为 term。
+Raft 将时间划分为 term。Term 由一组连续的整数进行编号，每个 Term 开始时会进行选主，在这个过程中一个或多个 candidate 会尝试变成主节点。在某些可能的场景下，一次选主可能不会达成一致，那么这样这个 Term 就不会有主节点产生。Raft 会确保在任一 Term，最多只会有一个主节点。在 Raft 中Term 是一个逻辑时钟，节点会根据 Term 检查收到的信息是否过期，比如主节点是否已经过期。每个节点都会维持一个单调递增的 `current term` 的值，节点在沟通过程中会传递这个值，如果一个节点的 `current term`  小于（与之交流的）另一个节点，那么它会其更新为更大的值，如果一个`candidate`或`leader`发现它的 Term 已经过期了，他会立马将其转变为`follower`状。如果一个节点接收到了带有过期的 term 的请求，它会拒绝这个请求。Raft 节点之间的交流是通过 RPC 进行的，主要两种类型的 RPC，Request Vote RPC 和 Append Entries RPC。
 
 
 
