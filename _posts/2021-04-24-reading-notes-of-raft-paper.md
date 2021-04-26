@@ -93,6 +93,9 @@ Raft 维护这下面两条日志复制的规则。
 
 #### 5.4.1 Election 限制
 
+部分一致性算法在主切换后，会通过额外的机制来识别新主缺失的日志条目，然后将这些缺失的日志条目传输到新主上。Raft 选择了更简单的方案，Raft 在选举过程中，只有包含最新的 log entry 能够选为 leader，这样 leader 就不需要覆盖任何日志。所以为了被选为新 leader，candidate 必须与集群中的多数节点沟通，这就意味着每条 committed 的日志都必须出现在至少一个 candidate 中。如果一个 candidate 的日志与大多数节点比较后是最新的，那么它就会包含素有已提交的 log entry。这个沟通通过 RequestVote Rpc 实现，如果被调用方的日志比调用方（candidate）更新，那么这个选主请求就会被否定掉。Raft 节点间比较日志是通过 index 和 Term 比较的，更大的 Term 更新，相同的 Term，更大的 index 就更新。
+
+#### 5.4.2 提交
 
 
 
