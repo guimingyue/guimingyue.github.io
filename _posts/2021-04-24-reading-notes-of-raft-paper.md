@@ -108,6 +108,22 @@ Raft 仅仅会针对当前的 Term 的 log entry，依赖复制的副本数来�
 
 Raft 的 RequestVote 和 AppendEntries RPC 调用是幂等的，所以如果 follower 和 candidate 宕机，那么直接重试即可。
 
+### 5.6 Timing and availability
+
+Raft 的安全性不能依赖时序来保证，也就是不能因为部分事件发生的比预期快或者慢就导致结果不正确。但是可用性无法避免的会依赖时序，特别是 Leader election，所以 Raft 需要时序满足如下不等式。
+
+```sql
+broadcastTime << electionTimeout << MTBF
+
+broadcastTime：节点并行调用其他节点并收到返回的时间；
+electionTimeout：选举超时时间
+MTBF：节点两次宕机时间间隔
+```
+
+由于Raft RPC 需要请求接收存储信息，所以 broadcastTime 在 0.5ms 到 20ms 之间，electionTimeout 在 10ms 到 500ms 之间。MTBF 比较大，几乎可以不考虑。
+
+## 6. 集群节点变更
+
 
 
 
