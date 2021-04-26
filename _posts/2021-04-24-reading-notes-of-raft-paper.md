@@ -124,8 +124,16 @@ MTBF：节点两次宕机时间间隔
 
 ## 6. 集群节点变更
 
+为了保证节点变更的安全性，Raft 的节点配置变更使用了两阶段的方法，首先切换到转换过度的`joint consensus`状态，然后再转换到最终的状态。在状态转换的整个过程中，Raft 集群可以支持客户端的请求。`joint consensus`包含新旧两种节点配置：
+* log entry 会复制到两种配置中。
+* 新旧两种配置都会存在与 leader 节点中。
+* 一致性需要再新旧两种配置中达成多数规则。
 
 
+集群配置的存储和传输是通过特定的 log entry 实现的，并且是以复制日志的形式传输。下图展示了配置变更的过程。当 leader 收到了将配置从 C<sub>old</sub>变更为C<sub>new</sub>的请求时，会在将配置变更存储为一个 log entry 并且复制到其他节点，这条 log entry 用 C<sub>old</sub>,<sub>new</sub>表示。一旦一个节点将收到的配置变更的 log entry 添加到日志队列中，它将在后续使用该配置，不管该 log entry 是否有提交。当 C<sub>old</sub>,<sub>new</sub> 被 leader 提交后，Leader 会再提交一个 C<sub>new</sub> 的 log entry，复制到其他节点，复制完成以后，旧的配置的节点就可以下线了。
+![figure 7 ](/images/raft_paper_notes/figure11-timeline-joint-consensus.png)
+
+## 7. Log compaction
 
 
 
