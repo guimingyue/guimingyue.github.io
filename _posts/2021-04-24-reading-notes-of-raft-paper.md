@@ -95,7 +95,18 @@ Raft 维护这下面两条日志复制的规则。
 
 部分一致性算法在主切换后，会通过额外的机制来识别新主缺失的日志条目，然后将这些缺失的日志条目传输到新主上。Raft 选择了更简单的方案，Raft 在选举过程中，只有包含最新的 log entry 能够选为 leader，这样 leader 就不需要覆盖任何日志。所以为了被选为新 leader，candidate 必须与集群中的多数节点沟通，这就意味着每条 committed 的日志都必须出现在至少一个 candidate 中。如果一个 candidate 的日志与大多数节点比较后是最新的，那么它就会包含素有已提交的 log entry。这个沟通通过 RequestVote Rpc 实现，如果被调用方的日志比调用方（candidate）更新，那么这个选主请求就会被否定掉。Raft 节点间比较日志是通过 index 和 Term 比较的，更大的 Term 更新，相同的 Term，更大的 index 就更新。
 
-#### 5.4.2 提交
+#### 5.4.2 最后提交的日志之前的日志提交
+
+在 log entry 被复制到多数节点后，leader 会提交当前 Term，如果在 leader 提交之前，leader 节点宕机了，那新的主会继续未完成的复制和提交操作。但是 leader 无法推立即推断出之前的 log entry 是否有提交，即使它已经被复制到了大多数节点中。
+Raft 仅仅会针对当前的 Term 的 log entry，依赖复制的副本数来提交，当前 Term 之前的 log entry 不会根据复制的副本数来确定是否提交，但是根据`Log Matching Property`，一旦某个 log entry 提交了，那么它之前的 log entry 也就提交了。
+
+#### 5.4.3 安全性论证
+
+先假设 Leader Completeness Property 不成立，然后通过提交日志和重新选主来推导出矛盾，从而证明 Raft 的安全性。
+
+### 5.5 follower 和 cadidate 宕机
+
+Raft 的 RequestVote 和 AppendEntries RPC 调用是幂等的，所以如果 follower 和 candidate 宕机，那么直接重试即可。
 
 
 
