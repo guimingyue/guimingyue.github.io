@@ -134,7 +134,24 @@ MTBF：节点两次宕机时间间隔
 ![figure 11 ](/images/raft_paper_notes/figure11-timeline-joint-consensus.png)
 
 ## 7. Log compaction
+Raft 使用了快照机制进行日志压缩和清理，快照机制将整个节点的状态写入存储中，然后再将日志队列中对应的 log entry 删掉。Chubby 和 ZooKeeper 都使用了快照。考虑到对节点负载的影响，快照不会对所有的日志进行，而是针对部分日志。在 Raft 中，每个节点都会独立的进行快照操作，快照操作仅仅针对已经提交的 log entry 进行，主要操作包括：
 
+* 状态机将当前的状态写入快照。
+* `last included index`，快照中的最后一个条 log entry 的 index，也标识状态机应用的最后一条 log entry。
+* `last included term`，是`last included index`对应的 Term。
+
+Raft 会利用这些信息做快照后续 log entry 的一致性校验。
+
+当 Leader 复制日志到 follower 失败并且放弃复制日志后会选择发送快照给 follower。快照传输的场景主要有：
+* follower 突然慢下来了，无法及时从 leader 复制日志。
+* 新的节点刚刚加入集群。
+
+Leader 使用 InstallSnapshot RPC 发送快照，follower 收到快照后，会用快照中的 log entry 替换掉当前日志队列中相同的 log entry，保留快照中没有的 log entry。
+
+在快照时，有两个性能相关的因素需要考虑：
+
+* 第一是快照的时机，快照不能频率太高（浪费磁盘带宽），但是也不能太低（日志占用磁盘空间太大）。Raft 的策略是当日志大小达到一个阈值之后，就开始快照。
+* 第二是快照过程中不能影响正常的操作。解决办法是使用 copy-on-write 的技术。
 
 
 
