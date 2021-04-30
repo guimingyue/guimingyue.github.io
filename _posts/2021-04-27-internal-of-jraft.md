@@ -30,6 +30,10 @@ Raft 概念中的节点的实现类是`com.alipay.sofa.jraft.core.NodeImpl`，�
 
 voteTimer 是作为选主的调度器，在选自己为主时开启（`electSelf`方法），在选主完成之后结束。
 
+Candidate 节点发起选举方法`handleElectionTimeout` -> `preVote`，其中`preVote`是针对网络分区场景下的一种优化，比如网络分区使得某个节点 A 发现当前没有 leader 了，所以会一直尝试选主从而 term 变大，当网络恢复后，A 节点会发现 term 比较大，继续选主，但是这种选主是没有必要的，通过`preVote`来避免这种情况。
+
+
+
 ### LogStorage 的实现
 
 LogStorage 作为 LogManager 持久化日志的存储实现，核心逻辑在 LogManagerImpl 的代码中。
@@ -80,6 +84,8 @@ com.alipay.sofa.jraft.core.Replicator#onAppendEntriesReturned 这里会提交日
 
 * [分布式一致性 Raft 与 JRaft](https://www.sofastack.tech/projects/sofa-jraft/consistency-raft-jraft/)
 * [Raft算法原理](https://www.codedump.info/post/20180921-raft/)
+* [etcd Raft库解析](https://www.codedump.info/post/20180922-etcd-raft/)
+* [RAFT介绍](https://github.com/baidu/braft/blob/master/docs/cn/raft_protocol.md)
 * [The Raft website](https://raft.github.io/)
 * [Diego Ongaro's Ph.D. dissertation](https://github.com/ongardie/dissertation)
 * [Raft paper](https://raft.github.io/raft.pdf)
