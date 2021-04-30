@@ -34,6 +34,7 @@ Candidate 节点发起选举方法`handleElectionTimeout` -> `preVote`，其中`
 
 
 
+
 ### LogStorage 的实现
 
 LogStorage 作为 LogManager 持久化日志的存储实现，核心逻辑在 LogManagerImpl 的代码中。
