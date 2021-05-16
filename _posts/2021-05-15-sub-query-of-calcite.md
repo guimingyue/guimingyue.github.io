@@ -197,6 +197,45 @@ LogicalProject(EMPNO=[$0], GENDER=[$3], NAME=[$1])
 * `!= any` 子查询
 * `= all` 子查询
 * `exists` 子查询
+
+```sql
+select empno, gender, name from EMPS
+ where gender = 'F' and empno > 110 and exists (select * from DEPTS where NAME='Marketing')
+
+LogicalProject(EMPNO=[$0], GENDER=[$2], NAME=[$1])
+  LogicalFilter(condition=[AND(=($2, 'F'), >($0, 110), EXISTS({
+LogicalFilter(condition=[=($1, 'Marketing')])
+  LogicalTableScan(table=[[SALES, DEPTS]])
+}))])
+    LogicalProject(EMPNO=[$0], NAME=[$1], GENDER=[$3])
+      LogicalTableScan(table=[[SALES, EMPS]])
+
+```
+转换后
+
+```sql
+SELECT `t`.`EMPNO`, `t`.`GENDER`, `t`.`NAME`
+FROM (SELECT `EMPNO`, `NAME`, `GENDER`
+FROM `SALES`.`EMPS`) AS `t`,
+(SELECT TRUE AS `i`
+FROM `SALES`.`DEPTS`
+WHERE `NAME` = 'Marketing'
+GROUP BY TRUE) AS `t2`
+WHERE `t`.`GENDER` = 'F' AND `t`.`EMPNO` > 110
+
+LogicalProject(EMPNO=[$0], GENDER=[$2], NAME=[$1])
+  LogicalProject(EMPNO=[$0], NAME=[$1], GENDER=[$2])
+    LogicalFilter(condition=[AND(=($2, 'F'), >($0, 110))])
+      LogicalJoin(condition=[true], joinType=[inner])
+        LogicalProject(EMPNO=[$0], NAME=[$1], GENDER=[$3])
+          LogicalTableScan(table=[[SALES, EMPS]])
+        LogicalAggregate(group=[{0}])
+          LogicalProject(i=[true])
+            LogicalFilter(condition=[=($1, 'Marketing')])
+              LogicalTableScan(table=[[SALES, DEPTS]])
+
+```
+
 * `>/>=/</<=/=/!=`子查询
 
 非相关子查询默认会被转换成 semi join 来执行。有些特殊的比如则需要做一些逻辑上的转换以获得更好的查询性能。
