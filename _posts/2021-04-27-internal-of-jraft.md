@@ -65,7 +65,7 @@ FSMCaller 是调用状态机的实现，由于状态机是有使用 JRaft 这个
 
 为什么是唤醒等待的 Replicator 呢？因为在正常流程中，Replicator 初始化时，会发送一个探测请求（probe 包）给 follower，在`com.alipay.sofa.jraft.core.Replicator#sendEmptyEntries(boolean, com.alipay.sofa.jraft.rpc.RpcResponseClosure<com.alipay.sofa.jraft.rpc.RpcRequests.AppendEntriesResponse>)`这里会发送 probe 包，完成后，会调用`com.alipay.sofa.jraft.core.Replicator#sendEntries()`，而这里会通过`com.alipay.sofa.jraft.core.Replicator#waitMoreEntries`将每个 Replicator 放入等待队列中，进而进入到`com.alipay.sofa.jraft.storage.impl.LogManagerImpl#wait`等待并发送 LogEntry。
 
-需要注意的是对客户端的响应事件，因为在 JRaft 处理客户端的请求会再多个异步队列中传递，所以响应客户端的时间会放在回调事件中处理，在处理过程中`com.alipay.sofa.jraft.core.NodeImpl#executeApplyingTasks`里调用`com.alipay.sofa.jraft.core.BallotBox#appendPendingTask`会将回调时间注册到回调队列，在 JRaft commit log entry 的时候会遍历回调队列，进行客户端的响应。
+需要注意的是对客户端的响应事件，因为在 JRaft 处理客户端的请求会再多个异步队列中传递，所以响应客户端的时间会放在回调事件中处理，在处理过程中`com.alipay.sofa.jraft.core.NodeImpl#executeApplyingTasks`里调用`com.alipay.sofa.jraft.core.BallotBox#appendPendingTask`会将回调时间注册到回调队列，在 JRaft commit log entry 的时候会遍历回调队列，进行客户端的响应，见`com.alipay.sofa.jraft.core.FSMCallerImpl#doCommitted`。
 
 `com.alipay.sofa.jraft.core.Replicator#sendEntries(long)` 这是正式发送 LogEntry 的地方.
 
