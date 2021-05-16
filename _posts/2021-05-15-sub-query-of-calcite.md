@@ -5,7 +5,7 @@ category: Calcite
 ---
 
 ## 子查询的概念
-子查询在 project，filter 等地方，分为相关和非相关子查询
+子查询出现在 SQL 语句的 project，filter 等地方，分为相关和非相关子查询，本文同步部分场景，测试了 Calcite 的子查询转换规则，以探究 Calcite 在子查询处理的处理逻辑以及转换规则。
 
 ## 非相关子查询的转换
 * in 子查询，转换成 inner join。
@@ -244,5 +244,6 @@ LogicalProject(EMPNO=[$0], GENDER=[$2], NAME=[$1])
 
 
 ## Reference
+* https://github.com/apache/calcite
 * https://docs.pingcap.com/zh/tidb/stable/subquery-optimization
 * https://www.bookstack.cn/read/TiDB-4.0/explain-subqueries.md
