@@ -104,7 +104,40 @@ LogicalProject(EMPNO=[$0], GENDER=[$3], NAME=[$1])
 ```
 ## 相关子查询
 
-相关子查询的查询条件依赖于外层查询，在 SQL 引擎处理中，也是尽量去除关联。
+相关子查询的查询条件依赖于外层查询，在 SQL 引擎处理中，也是尽量去除关联。比如如下关联子查询的 SQL 语句，子查询出现在 SELECT 列表中
+
+```sql
+select 
+empno, name, (select name from DEPTS where DEPTS.DEPTNO=EMPS.DEPTNO) as dpt_name 
+from EMPS where gender = 'F' and empno > 110
+```
+Calcite 转换成的逻辑执行计划是，可以看到，其最外层的`LogicalProject`算子有一个属性是`$SCALAR_QUERY`，这是`RexSubQuery` 类型（一种`RexNode`），对应的又是一个算子树，包含`LogicalProject`，`LogicalFilter`和`LogicalTableScan`。
+
+```sql
+LogicalProject(EMPNO=[$0], NAME=[$1], DPT_NAME=[$SCALAR_QUERY({
+LogicalProject(NAME=[$1])
+  LogicalFilter(condition=[=($0, $cor0.DEPTNO)])
+    LogicalTableScan(table=[[SALES, DEPTS]])
+})])
+  LogicalFilter(condition=[AND(=($2, 'F'), >($0, 110))])
+    LogicalProject(EMPNO=[$0], NAME=[$1], GENDER=[$3])
+      LogicalTableScan(table=[[SALES, EMPS]])
+
+```
+
+经过 Calcite 的`SubQueryRemoveRule`处理后，转换而成的逻辑执行计划如下所示，可以看到`RexSubQuery`类型的`$SCALAR_QUERY`被替换成了`LogicalCorrelate`算子，这就表示相关子查询。接下来就需要借助`RelDecorrelator`将相关子查询转换成 join 了。
+
+```sql
+LogicalProject(EMPNO=[$0], NAME=[$1], DPT_NAME=[$3])
+  LogicalCorrelate(correlation=[$cor0], joinType=[left], requiredColumns=[{2}])
+    LogicalFilter(condition=[AND(=($2, 'F'), >($0, 110))])
+      LogicalProject(EMPNO=[$0], NAME=[$1], GENDER=[$3])
+        LogicalTableScan(table=[[SALES, EMPS]])
+    LogicalAggregate(group=[{}], agg#0=[SINGLE_VALUE($0)])
+      LogicalProject(NAME=[$1])
+        LogicalFilter(condition=[=($0, $cor0.DEPTNO)])
+          LogicalTableScan(table=[[SALES, DEPTS]])
+```
 
 ## Reference
 * https://github.com/apache/calcite
