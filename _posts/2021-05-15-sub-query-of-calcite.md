@@ -139,6 +139,20 @@ LogicalProject(EMPNO=[$0], NAME=[$1], DPT_NAME=[$3])
           LogicalTableScan(table=[[SALES, DEPTS]])
 ```
 
+通过`RelDecorrelator#decorrelateQuery`去关联化之后的逻辑执行计划如下所示。
+
+```sql
+LogicalProject(EMPNO=[$0], NAME=[$1], DPT_NAME=[$4])
+  LogicalJoin(condition=[=($2, $3)], joinType=[left])
+    LogicalProject(EMPNO=[$0], NAME=[$1], GENDER=[$3])
+      LogicalFilter(condition=[AND(=($3, 'F'), >($0, 110))])
+        LogicalTableScan(table=[[SALES, EMPS]])
+    LogicalAggregate(group=[{0}], agg#0=[SINGLE_VALUE($1)])
+      LogicalProject(DEPTNO=[$0], NAME=[$1])
+        LogicalFilter(condition=[IS NOT NULL($0)])
+          LogicalTableScan(table=[[SALES, DEPTS]])
+```
+
 ## Reference
 * https://github.com/apache/calcite
 * https://docs.pingcap.com/zh/tidb/stable/subquery-optimization
