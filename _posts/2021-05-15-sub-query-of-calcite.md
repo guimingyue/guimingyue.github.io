@@ -139,7 +139,7 @@ LogicalProject(EMPNO=[$0], NAME=[$1], DPT_NAME=[$3])
           LogicalTableScan(table=[[SALES, DEPTS]])
 ```
 
-通过`RelDecorrelator#decorrelateQuery`去关联化之后的逻辑执行计划如下所示。
+通过`RelDecorrelator#decorrelateQuery`去关联化之后的逻辑执行计划如下所示。Calcite 的关联子查询转 join 的逻辑在`org.apache.calcite.sql2rel.RelDecorrelator#decorrelateRel(Correlate rel, boolean isCorVarDefined)`这个重载方法中实现。
 
 ```sql
 LogicalProject(EMPNO=[$0], NAME=[$1], DPT_NAME=[$4])
