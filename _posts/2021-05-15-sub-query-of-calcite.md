@@ -155,6 +155,6 @@ LogicalProject(EMPNO=[$0], NAME=[$1], DPT_NAME=[$4])
 ```
 
 ## Reference
-* https://github.com/apache/calcite
-* https://docs.pingcap.com/zh/tidb/stable/subquery-optimization
-* https://www.bookstack.cn/read/TiDB-4.0/explain-subqueries.md
+* [https://github.com/apache/calcite](https://github.com/apache/calcite)
+* [https://docs.pingcap.com/zh/tidb/stable/subquery-optimization](https://docs.pingcap.com/zh/tidb/stable/subquery-optimization)
+* [https://www.bookstack.cn/read/TiDB-4.0/explain-subqueries.md](https://www.bookstack.cn/read/TiDB-4.0/explain-subqueries.md)
