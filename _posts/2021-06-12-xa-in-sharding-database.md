@@ -55,7 +55,7 @@ XA RECOVER [CONVERT XID]
 
 ## XA 的使用
 
-以下是一个使用 JTA 的 XA 事务接口的例子。其中 Xid 接口是 JTA 对 XA 中 xid 的抽象，下面代码中的 MyXid 为实现类。
+以下是一个使用 JTA（Java Transaction API） 的 XA 事务接口的例子。其中 Xid 接口是 JTA 对 XA 中 xid 的抽象，MyXid 为其实现类。在 main 方法中，会创建 db1 和 db2 的 XA DataSource，再分别获取到对应的数据库连接。创建完连接以后，就开始各个分支事务，即每个分库的 XA 事务，调用`javax.transaction.xa.XAResource#start`接口，然后就是执行分支事务内的 SQL 语句，结束后就执行`javax.transaction.xa.XAResource#end`标识分支事务的 SQL 语句结束，接下来就是两阶段提交的 prepare 流程，即执行`javax.transaction.xa.XAResource#prepare`，告知 RM 为事务提交做准备，如果每个分库的 prepare 操作都是成功的，就执行最后的提交。这就是一个基于 XA 接口的分布式事务的提交流程。
 
 ```java
 import com.mysql.jdbc.jdbc2.optional.MysqlXADataSource;
@@ -145,15 +145,37 @@ class MyXid implements Xid {
 
 ## Sharding 模式下如何使用 XA 事务
 
+在 Sharding （分库分表）模式下，如果一个事务要跨多个分库时，就需要分布式事务的支持，如果要支持强一致的分布式事务，那基于底层关系型数据库的 XA 事务来实现强一致的分布式事务，就是一个比较合适的选择。
+
+在 Sharding 模式下，负责计算路由的节点作为分布式事务的事务管理器（TM），底层关系型数据库的分库作为资源管理器（RM）。具体的执行流程如下：
+0. 首先 TM 所在的节点接收到事务请求，在节点上开启一个基于 XA 接口的分布式事务（属于当前连接），这个过程仅仅需要构造一个本地的代表 XA 事务的对象，接下来接收到的 SQL 都是在该事务下执行。
+1. 接收事务内的 SQL 语句，并计算在哪些分库上执行，第一次获取到每个分库的连接时，执行`XA START ${xid}`语句，其中 xid 需要 TM 生成。
+2. 当接收到事务提交的 commit 请求时，对每个底层分库连接执行`XA END ${xid}`语句。
+3. 对每个底层分库连接执行 prepare 操作。
+4. prepare 操作成功，再对每个分库连接执行分支事务提交 commit 操作，否则，
+5. 执行回滚。
+
+### ShardingSphere 中 XA 事务的实现
+
+[ShardingSphere](http://shardingsphere.apache.org/) 分别基于 Atomikos，Narayana 和 Bitronix 这几个框架实现了 XA 事务，使用 SPI 的方式提供服务，使用者可以根据需求，选择具体的实现。XA 事务的类型的选择在构造 ShardingSphereDataSource 对象的时候通过配置项`xa-transaction-manager-type`指定.
+
+在 ShardingSphere 的代码实现中，`ShardingSphereConnection`是 ShardingSphere 提供给客户端的连接，在其构造方法中会传入事务类型（LOCAL，XA，BASE），会根据这个参数构造出对应的事务管理器，如果选择的是 XA 事务，则会使用`XAShardingTransactionManager`类型的对象。
+
+在 ShardingSphere 中，XA 事务运行流程如下：
+
+0. 设置 autoCommit 为 false，代码位于`ShardingSphereConnection#setAutoCommit`，此时会通过 `shardingTransactionManager.begin()` 开启一个 XA 事务，因为`shardingTransactionManager`对象类型为`XAShardingTransactionManager`。这个过程会依赖具体的 XA 事务管理器框架，对于 Bitronix，会创建一个 BitronixTransaction 对象，用于代表开启的分布式事务。
+1. 接下来就是正常执行事务内的 SQL 语句，执行 SQL 语句需要根据 SQL 语句计算待执行的分库，所以需要与分库建立连接，这个过程的代码实现在 `ShardingSphereConnection#getConnection`等获取连接的方法中，在执行到 `ShardingSphereConnection#createConnection`方法时，会判断当前事务是否在一个分布式事务中（`isInShardingTransaction`），如果在就通过事务管理器`shardingTransactionManager`获取连接。在事务管理器中会维持底层分库的`XATransactionDataSource`，所以这个获取连接的流程会执行到`XATransactionDataSource#getConnection`。
+2. XA 事务中，获取分库连接时，会执行`XA START ${xid}`语句，对于 Bitronix ，相关代码在`bitronix.tm.BitronixTransaction#enlistResource`方法中。其生成 xid 的方法在`bitronix.tm.utils.UidGenerator#generateXid`中，Bitronix 生成的 xid 由 gtrid 和 bqual 两部分组成，它们均是由`bitronix.tm.utils.UidGenerator#generateUid`方法生成，具体生成规则是：timestamp + sequence + serverId，其中 serverId 可以通过配置指定，如果未配置，就使用当前节点的 IP。
+3. 在获取到分库连接以后，就按照正常的流程执行 SQL 语句。执行完之后，通过`ShardingSphereConnection#commit`进行事务提交。事务提交会由具体的事务管理器实现。对于 Bitronix 则会执行到`bitronix.tm.BitronixTransactionManager#commit`，事务管理器的事务提交流程与上面的 demo 中的流程类似，首先是执行`XA END ${xid}`结束事务 SQL 语句执行，然后执行 prepare 操作，成功后，执行最终的 commit。
+## XA 事务回滚与恢复
+
 TODO
-
-## XA 事务恢复
-
 
 
 ## Reference
 
 * [MySQL XA Transactions](https://dev.mysql.com/doc/refman/8.0/en/xa.html)
 * [《MySQL技术内幕：InnoDB存储引擎(第2版)](https://book.douban.com/subject/24708143/)
-* [Designing Data-Intensive Applications](https://book.douban.com/subject/26197294/)
+* [《Designing Data-Intensive Applications》](https://book.douban.com/subject/26197294/)
 * [ACID vs. BASE: Comparison of Database Transaction Models](https://phoenixnap.com/kb/acid-vs-base)
+* [ShardingSphere XA两阶段事务](https://shardingsphere.apache.org/document/current/cn/features/transaction/principle/2pc-xa-transaction/)
