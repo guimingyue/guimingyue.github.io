@@ -15,6 +15,10 @@ BASE 常常被称为柔性事务，具体是指：
 
 相对于强一致事务，柔性事务的局限在于仅仅能实现读未提交的事务隔离级别，而强一致的分布式事务则可以实现强于读未提交的事务隔离级别，比如基于 XA 接口，可以实现读已提交的事务隔离级别。
 
+### 两阶段提交
+
+![DTP Model](/images/two-phase-commit.png)
+
 ### XA 接口
 
 X/Open 组织在 1991 年定义了 The X/Open Distributed Transaction Processing 模型，简称为 DTP 模型，它是一种分布式事务的规范。在 DTP 模型中，存在三种组件。
