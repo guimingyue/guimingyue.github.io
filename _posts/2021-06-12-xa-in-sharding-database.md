@@ -17,7 +17,7 @@ BASE 常常被称为柔性事务，具体是指：
 
 ### 两阶段提交
 
-两阶段提交就是一种在分布式环境下实现事务语义的算法，它会确保分布式环境下所有节点的事务操作都成功或者都失败。两阶段提交的示意图所下所示。Coordinator 会向两个事务参与者 Database 1 和 Database 2 写入数据，整个提交过程被划分成两个阶段，prepare 阶段和 commit 阶段。Coordinator 也叫事务管理器（Transaction Manager），在事务提交时，Coordinator 会根据 prepare 阶段的结果确定 commit 阶段的操作。如果所有的 prepare 的结果为成功，那么 Coordinator 会在 commit 阶段提交整个事务，如果有任何一个参与者在 prepare 阶段返回失败，则 Coordinator 会终止整个事务。
+两阶段提交就是一种在分布式环境下实现事务语义的算法，它会确保分布式环境下所有节点的事务操作都成功或者都失败。两阶段提交的示意图所下所示。Coordinator 会向两个事务参与者 Database 1 和 Database 2 写入数据，写入数据完成后是一个提交过程，整个提交过程被划分成两个阶段，prepare 阶段和 commit 阶段。Coordinator 也叫事务管理器（Transaction Manager），在事务提交时，Coordinator 会根据 prepare 阶段的结果确定 commit 阶段的操作。如果所有的 prepare 的结果为成功，那么 Coordinator 会在 commit 阶段提交整个事务，如果有任何一个参与者在 prepare 阶段返回失败，则 Coordinator 会终止整个事务。
 
 ![2PC](/images/xa-in-sharding-database/two-phase-commit.png)
 
