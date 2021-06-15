@@ -17,7 +17,7 @@ BASE 常常被称为柔性事务，具体是指：
 
 ### 两阶段提交
 
-![2PC](/images/two-phase-commit.png)
+![2PC](/images/xa-in-sharding-database/two-phase-commit.png)
 
 ### XA 接口
 
