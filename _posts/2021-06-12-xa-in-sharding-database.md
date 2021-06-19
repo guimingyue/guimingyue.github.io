@@ -152,6 +152,22 @@ class MyXid implements Xid {
 }
 ```
 
+MySQL 数据库环境准备 SQL 语句。
+
+```sql
+create database db1;
+CREATE USER 'peter'@'%' IDENTIFIED BY '123456';
+GRANT ALL ON db1.* TO 'peter'@'%';
+create table account(user varchar(10) primary key,money int)
+insert into account(user, money) values('david',10000);
+
+create database db2;
+CREATE USER 'david'@'%' IDENTIFIED BY '123456';
+GRANT ALL ON db2.* TO 'david'@'%';
+create table account(user varchar(10) primary key,money int)
+insert into account(user, money) values('mariah',0);
+```
+
 ## Sharding 模式下如何使用 XA 事务
 
 在 Sharding （分库分表）模式下，如果一个事务要跨多个分库时，就需要分布式事务的支持，如果要支持强一致的分布式事务，那基于底层关系型数据库的 XA 事务来实现强一致的分布式事务，就是一个比较合适的选择。
