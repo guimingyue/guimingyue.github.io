@@ -64,7 +64,7 @@ XA RECOVER [CONVERT XID]
 以下是一个使用 JTA（Java Transaction API） 的 XA 事务接口的例子。其中 Xid 接口是 JTA 对 XA 中 xid 的抽象，MyXid 为其实现类。在 main 方法中，会创建 db1 和 db2 的 XA DataSource，再分别获取到对应的数据库连接。创建完连接以后，就开始各个分支事务，即每个分库的 XA 事务，调用`javax.transaction.xa.XAResource#start`接口，然后就是执行分支事务内的 SQL 语句，结束后就执行`javax.transaction.xa.XAResource#end`标识分支事务的 SQL 语句结束，接下来就是两阶段提交的 prepare 流程，即执行`javax.transaction.xa.XAResource#prepare`，告知 RM 为事务提交做准备，如果每个分库的 prepare 操作都是成功的，就执行最后的提交。这就是一个基于 XA 接口的分布式事务的提交流程。
 
 ```java
-import com.mysql.jdbc.jdbc2.optional.MysqlXADataSource;
+import com.mysql.cj.jdbc.MysqlXADataSource;
 
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAException;
@@ -74,6 +74,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+* 需要 注意 JDBC 驱动问题，MySQL Server 8.0 的版本，驱动不能使用 5.x 版本的驱动
+*/
 public class XADemo {
     
     public static void main(String[]args) throws XAException, SQLException {
@@ -173,6 +176,7 @@ class MyXid implements Xid {
 1. 接下来就是正常执行事务内的 SQL 语句，执行 SQL 语句需要根据 SQL 语句计算待执行的分库，所以需要与分库建立连接，这个过程的代码实现在 `ShardingSphereConnection#getConnection`等获取连接的方法中，在执行到 `ShardingSphereConnection#createConnection`方法时，会判断当前事务是否在一个分布式事务中（`isInShardingTransaction`），如果在就通过事务管理器`shardingTransactionManager`获取连接。在事务管理器中会维持底层分库的`XATransactionDataSource`，所以这个获取连接的流程会执行到`XATransactionDataSource#getConnection`。
 2. XA 事务中，获取分库连接时，会执行`XA START ${xid}`语句，对于 Bitronix ，相关代码在`bitronix.tm.BitronixTransaction#enlistResource`方法中。其生成 xid 的方法在`bitronix.tm.utils.UidGenerator#generateXid`中，Bitronix 生成的 xid 由 gtrid 和 bqual 两部分组成，它们均是由`bitronix.tm.utils.UidGenerator#generateUid`方法生成，具体生成规则是：timestamp + sequence + serverId，其中 serverId 可以通过配置指定，如果未配置，就使用当前节点的 IP。
 3. 在获取到分库连接以后，就按照正常的流程执行 SQL 语句。执行完之后，通过`ShardingSphereConnection#commit`进行事务提交。事务提交会由具体的事务管理器实现。对于 Bitronix 则会执行到`bitronix.tm.BitronixTransactionManager#commit`，事务管理器的事务提交流程与上面的 demo 中的流程类似，首先是执行`XA END ${xid}`结束事务 SQL 语句执行，然后执行 prepare 操作，成功后，执行最终的 commit。
+
 ## XA 事务回滚与恢复
 
 正常情况下，XA 事务执行成功，TM 仅需要做好 prepare 和 commit 流程，但是对于事务执行异常的场景，则需要记录一些事务信息，以便事务重试或者回滚，这些信息就是事务执行日志。所以 TM 需要跟踪事务中的 RM，记录 prepare 之后各个 RM 的响应。例如，如果 TM 进程 crash 或者所在的机器宕机了，RM 中已 prepare 但是未 commit 的事务就处于中间状态了，这时只能依赖事务过程中记录的日志来确定是继续提交事务还是回滚事务。如果事务处于中间状态会有什么影响呢？由于在每个分支事务执行完之前，如果对数据有修改，RM 会对这些数据加锁，所以在整个 XA 事务提交或回滚之前，对已经加上的锁是不会释放的，即使 RM 所在的数据库实例重启。所以 XA 事务的恢复和回滚必须依赖事务执行过程中的日志，比如哪些 RM 执行了 commit，哪些执行了 prepare。
