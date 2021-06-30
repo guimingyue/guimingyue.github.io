@@ -53,6 +53,10 @@ XA RECOVER [CONVERT XID]
 
 除了 XA RECOVER，其他语句中都会带有一个 `xid` 的参数，这个参数是一个 XA 分支事务的标识，比如一个全局的分布式事务中，通常会包含多个 XA 事务，每个 XA 事务都会再某一个分库中执行，每一个分库上执行的事务都被称为一个分支事务，所以每一个分支事务都需要一个全局唯一的标识，它由全局事务的事务管理器（TM）生成。
 
+XA 分支事务的状态转换图如下所示。由于不存在 TERMINATED 这个终止状态，所以其边框用虚线表示。
+
+![XA branch state](/images/xa-in-sharding-database/xa_state.png)
+
 在一个由多个 MySQL 分库参与的，基于 XA 接口的分布式事务中，MySQL 分库就代表资源管理者（RM），那应用程序（AP）就是分布式事务的使用者。所以基于 XA 接口的分库分表场景下的分布式事务的示意图，如下图所示。
 
 ![XA Interface](/images/xa-in-sharding-database/xa-database.png)
