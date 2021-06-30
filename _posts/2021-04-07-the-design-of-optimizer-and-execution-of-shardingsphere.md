@@ -7,7 +7,7 @@ category: ShardingSphere
 [Apache ShardingSphere](http://shardingsphere.apache.org/)的官方定义是一套开源的分布式数据库解决方案组成的生态圈。它由 JDBC、Proxy 和 Sidecar（规划中）这 3 款既能够独立部署，又支持混合部署配合使用的产品组成。它们均提供标准化的数据水平扩展、分布式事务和分布式治理等功能，可适用于如 Java 同构、异构语言、云原生等各种多样化的应用场景。
 简单来说，它提供的核心功能就是基于关系型数据库的分库分表（Sharding），读写分离以及分布式事物等能力，再在这些核心能力之上，提供了 Proxy（支持 MySQL 和 PostgreSQL 协议）的能力。由于是用 Java 语言编写，所以实现了 JDBC 规范，方便直接在 Java 代码中使用。此外还提供了分布式治理，弹性伸缩等能力。
 
-在分布式数据库的能力方面，ShardingSphere 还不支持跨库 Join 的能力。去年在学习 Apache Calcite 时与 ShardingSphere 社区沟通过基于 Calcite 实现跨库 Join 的想法，所以近半年时间里，实现了一个大致的框架，并且基于 Calcite 引入了 RBO 和 CBO 的架构。在这个框架下面，可以执行简单的 SQL 语句，可以完成简单的分布式 Join 的查询（不支持 Exchange 算子），但是还远远没有达到完整分布式数据库的目标。下文将对介绍在 ShardingSphere 中实现分布式数据库的能力的一部分设计思路，文中对于什么是分库分表，Sharding 等这些概念不做介绍，建议从网上寻找答案。目前的代码仓库地址：[https://github.com/guimingyue/shardingsphere/tree/dev](https://github.com/guimingyue/shardingsphere/tree/dev)
+在分布式数据库的能力方面，ShardingSphere 还不支持跨库 Join 的能力。去年在学习 Apache Calcite 时与 ShardingSphere 社区沟通过基于 Calcite 实现跨库 Join 的想法，所以近半年时间里，实现了一个大致的框架，并且基于 Calcite 引入了 RBO 和 CBO 的架构。在这个框架下面，可以执行简单的 SQL 语句，可以完成简单的分布式 Join 的查询（不支持 Exchange 算子），但是还远远没有达到完整分布式数据库的目标。下文将对介绍在 ShardingSphere 中实现分布式数据库的能力的一部分设计思路，文中对于什么是分库分表，Sharding 等这些概念不做介绍，建议从网上寻找答案。目前的代码仓库地址：[https://github.com/guimingyue/shardingsphere/tree/sharding-executor](https://github.com/guimingyue/shardingsphere/tree/sharding-executor)
 
 
 ## Sharding 模式下的跨库 Join
