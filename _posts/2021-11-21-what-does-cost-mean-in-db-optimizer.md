@@ -19,7 +19,55 @@ category: Database
 基于代价的优化器会根据预估的关系代数运算符的物理代价，计算出物理执行计划所对应的代价，最终由基于代价的优化器选择出物理代价相对最小的物理执行计划。
 
 ## 代价模型
-为了比较各个不同的执行计划的代价，首先需要知道执行计划的代价是多少，而代价的量化则就需要先定义出代价大小的评判标准，这就是代价模型。比如对于一个物理执行计划，执行它的过程中，每一种操作符的执行消耗是多少。而执行消耗可以是 CPU 占用时长，可以使内存占用大小，也可以是执行过程中的 IO 开销。代价模型由优化器根据具体的实现进行定义，可以是一个标量值，也可以是定义成多个标量值的集合，甚至还可以是一个向量。
+为了比较各个不同的执行计划的代价，首先需要知道执行计划的代价是多少，而代价的量化则就需要先定义出代价大小的评判标准，这就是代价模型。比如对于一个物理执行计划，执行它的过程中，每一种操作符的执行消耗是多少。而执行消耗可以是 CPU 占用时长，可以使内存占用大小，也可以是执行过程中的 IO 开销。代价模型由优化器根据具体的实现进行定义，可以是一个标量值，也可以是多个标量值的集合，甚至还可以是一个向量，只要能在优化的过程中比较不同的操作符执行消耗的大小就行。
+
+在 Apache Calcite 的优化器框架中，定义了[`org.apache.calcite.plan.RelOptCost`](https://github.com/apache/calcite/blob/master/core/src/main/java/org/apache/calcite/plan/RelOptCost.java)这个接口，用于在优化器中实现代价的抽象，在其定义中，与代价属性相关的方法定义如下。主要有数据行数，cpu 资源和 I/O 资源这三种代价相关属性。在该接口的默认实现中[org.apache.calcite.plan.RelOptCostImpl](https://github.com/apache/calcite/blob/master/core/src/main/java/org/apache/calcite/plan/RelOptCostImpl.java)，只使用了数据行数用于定义代价模型。
+
+```java
+public interface RelOptCost {
+
+  /** Returns the number of rows processed; this should not be
+   * confused with the row count produced by a relational expression
+   * ({@link org.apache.calcite.rel.RelNode#estimateRowCount}). */
+  double getRows();
+
+  /** Returns usage of CPU resources. */
+  double getCpu();
+
+  /** Returns usage of I/O resources. */
+  double getIo();
+```
+而在 Volcano/Cascades 的优化器实现中[org.apache.calcite.plan.volcano.VolcanoCost](https://github.com/apache/calcite/blob/master/core/src/main/java/org/apache/calcite/plan/volcano/VolcanoCost.java)，使用的代价模型使用了数据行数，CPU 资源和 IO 资源来定义代价模型，代码如下。
+
+```java
+class VolcanoCost implements RelOptCost {
+
+  final double cpu;
+  final double io;
+  final double rowCount;
+
+  VolcanoCost(double rowCount, double cpu, double io) {
+    this.rowCount = rowCount;
+    this.cpu = cpu;
+    this.io = io;
+  }
+
+  @Override 
+  public double getCpu() {
+    return cpu;
+  }
+
+  @Override 
+  public double getIo() {
+    return io;
+  }
+
+  @Override 
+  public double getRows() {
+    return rowCount;
+  }
+```
+
 
 ## 代价估算
 代价的计算依赖于数据库中的元数据参数，这些参数要么是精确的，要么是不精确的估算信息。
