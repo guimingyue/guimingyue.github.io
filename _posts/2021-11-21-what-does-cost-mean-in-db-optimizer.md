@@ -111,11 +111,10 @@ public @Nullable RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQu
     double dIo = 0;
     return planner.getCostFactory().makeCost(dRows, dCpu, dIo);
   }
-
 ```
 
 ## 总结
-
+代价模型在数据库中是一个重要的概念，具体的实现依赖于优化器，并且基于代价模型计算出来的代价并不能完全准确，但是需要尽可能反应出执行计划的相对代价，帮助优化器选出合适的物理执行计划。
 
 ## Reference
 * Apache Calcite: A Foundational Framework for Optimized Query Processing Over Heterogeneous Data Sources
