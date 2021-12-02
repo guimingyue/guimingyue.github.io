@@ -34,7 +34,7 @@ WHERE
 ## 代价模型
 为了比较各个不同的执行计划的代价，首先需要知道执行计划的代价是多少，而代价的量化则就需要先定义出代价大小的评判标准，这就是代价模型。比如对于一个物理执行计划，执行它的过程中，每一种操作符的执行消耗是多少。而执行消耗可以是 CPU 占用时长，可以使内存占用大小，也可以是执行过程中的 IO 开销。代价模型是根据优化器根据具体的实现进行定义，可以是一个标量值，也可以是多个标量值的集合，甚至还可以是一个向量，只要能在优化的过程中比较不同的操作符执行消耗的大小就行。
 
-在 Apache Calcite 的优化器框架中，定义了[`org.apache.calcite.plan.RelOptCost`](https://github.com/apache/calcite/blob/master/core/src/main/java/org/apache/calcite/plan/RelOptCost.java)这个接口，用于在优化器中实现代价的抽象，在其定义中，与代价属性相关的方法定义如下。主要有数据行数，cpu 资源和 I/O 资源这三种代价相关属性。在该接口的默认实现中[org.apache.calcite.plan.RelOptCostImpl](https://github.com/apache/calcite/blob/master/core/src/main/java/org/apache/calcite/plan/RelOptCostImpl.java)，只使用了数据行数用于定义代价模型。
+在 Apache Calcite 的优化器框架中，定义了接口 [`org.apache.calcite.plan.RelOptCost`](https://github.com/apache/calcite/blob/master/core/src/main/java/org/apache/calcite/plan/RelOptCost.java)，用于在优化器中实现代价的抽象。在其定义中，与代价属性相关的方法定义如下。主要有数据行数，cpu 资源和 I/O 资源这三种代价相关属性。在该接口的默认实现中[org.apache.calcite.plan.RelOptCostImpl](https://github.com/apache/calcite/blob/master/core/src/main/java/org/apache/calcite/plan/RelOptCostImpl.java)，只使用了数据行数用于定义代价模型。
 
 ```java
 public interface RelOptCost {
@@ -50,7 +50,7 @@ public interface RelOptCost {
   /** Returns usage of I/O resources. */
   double getIo();
 ```
-而在 Apache Calcite 的 Volcano/Cascades 的优化器的代价模型实现中[org.apache.calcite.plan.volcano.VolcanoCost](https://github.com/apache/calcite/blob/master/core/src/main/java/org/apache/calcite/plan/volcano/VolcanoCost.java)，使用的代价模型使用了数据行数，CPU 资源和 IO 资源来定义代价模型，代码如下。
+而在 Apache Calcite 的 Volcano/Cascades 的优化器的代价模型实现中 [`org.apache.calcite.plan.volcano.VolcanoCost`](https://github.com/apache/calcite/blob/master/core/src/main/java/org/apache/calcite/plan/volcano/VolcanoCost.java)，则使用了数据行数，CPU 资源和 IO 资源来定义代价模型，这三种属性都是`double`类型，即双精度浮点类型。代码如下。
 
 ```java
 class VolcanoCost implements RelOptCost {
@@ -83,11 +83,11 @@ class VolcanoCost implements RelOptCost {
 
 
 ## 代价估算
-由于物理执行计划的代价只有在执行的时候才能精确的测量具体的代价值是多少，比如每个操作符的执行占用了多少 CPU 时间，占用了多少内存空间等，但是将每个物理计划执行一遍来对比代价显然是不现实的，所以在优化阶段的代价是估算的，也就是说并不是精确的。代价的计算依赖于数据库中的元数据参数和统计信息，这些参数要么是精确元数据信息，要么是不精确的估算信息。
+由于物理执行计划的代价只有在执行的时候才能精确的测量具体的代价值是多少，比如每个算子的执行占用了多少 CPU 时间，占用了多少内存空间等，但是将每个物理计划执行一遍来计算出代价，进而比较代价的大小，显然是不现实的。所以，在优化阶段的代价是估算的，也就是并不是精确的。代价的计算依赖于数据库中的元数据参数和统计信息，这些参数要么是精确元数据信息，要么是不精确的估算信息。
 
 在优化阶段使用到的元数据信息主要有表结构信息，列索引信息和列值的分布（比如对于 sharding 场景下的拆分列和拆分算法）。统计信息主要有列值直方图，NVD 值，Null 值的数量。
 
-在 Apache Calcite 中，定义了 `org.apache.calcite.rel.RelNode#computeSelfCost` 来计算每个操作符的代价。
+在 Apache Calcite 中，定义了 `org.apache.calcite.rel.RelNode#computeSelfCost` 来计算每个算子的代价。
 
 ```java
   /**
@@ -101,7 +101,7 @@ class VolcanoCost implements RelOptCost {
   @Nullable RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq);
 ```
 
-例如 `org.apache.calcite.rel.core.Filter` 操作符计算代价就利用估算的行数和基于的子操作符的行数计算的 CPU 消耗，进行计算，由于该 Filter 操作符不涉及到 I/O，所以设置的 `dIo` 数值为 0.
+例如 `org.apache.calcite.rel.core.Filter` 这个算子的代价计算就利用估算的行数和基于的子操作符的行数计算的 CPU 消耗，进行计算，由于该 Filter 操作符不涉及到 I/O，所以设置的 `dIo` 数值为 0.
 
 ```java
 @Override 
