@@ -26,8 +26,7 @@ WHERE
   AND c_custkey = o_custkey
   AND o_orderkey = l_orderkey
 ```
-
-
+![TPC-H join order](/images/tpch-join-order.svg)
 
 基于代价的优化器会根据预估的关系代数运算符的物理代价，计算出物理执行计划所对应的代价，最终由基于代价的优化器选择出物理代价相对最小的物理执行计划。
 
