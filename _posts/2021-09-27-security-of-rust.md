@@ -21,3 +21,6 @@ fn test(vec: Vec<i32>) -> Vec<i32> {
 ```
 
 ### Clone
+
+## Pattern Matching
+
