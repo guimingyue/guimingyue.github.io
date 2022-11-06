@@ -1,16 +1,10 @@
 ---
 layout: post
-title: 数据库事务介绍
+title: 数据库事务原理与实践
 category: Database
 ---
 
-## 事务特性介绍
-
-ACID 中 C 其实是业务上的定义，并不是事务的特征。
-
-## 事务隔离级别
-
-## Read Commit
+[数据库事务原理与实践](/files/数据库事务原理与实践.pptx)
 
 ## Reference
 * 《Designing Data-Intensive Applications》
