@@ -4,7 +4,7 @@ https://guimy.tech
 ## Build on local machine
 
 ```shell
-jekyll serve
+bundle exec jekyll serve
 ```
 
 __*note*__
