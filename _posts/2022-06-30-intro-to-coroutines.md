@@ -31,13 +31,17 @@ computeResult(f1.get(), f2.get());
 协程还是会由操作系统的线程来执行，而线程则是在处理器上执行的，所以协程，线程和处理器的关系可以用下图表示。
 ![coroutine-thread-processor](/images/coroutine/processor-thread-coroutine.drawio.png)
 
+每个线程在同一时刻只会调度一个协程执行，协程间的切换在用户态执行，无需操作系统参与，运行开销比较小。如果某个正在执行中的协程遇到 IO 事件，那么就暂停该协程的执行，再调度其他待执行的协程，等 IO 事件完成，就再等待调度。这样就实现了协程的暂停和恢复。
 
-## 协程的使用
+
+## 协程的分类
+根据协程的实现方式，可以将协程分为有栈协程（stackful coroutine）和无栈协程（stackless coroutine）。有栈协程的代表就是 Go 语言的 goroutine，Java 语言的协程（Virtual Thread）也是有栈协程。而 C++，C# 和 Kotlin 等语言则实现的是无栈协程，当然 C++ 语言也有许多有栈协程的实现。
+一个线程在暂停调度时，操作系统会保存线程执行的“现场”，当再次调度到该线程执行时则会恢复“现场”，所以协程也一样，暂停和恢复协程的执行也需要保存和恢复“现场”，这个过程就可以分为有栈的实现和非栈的实现。
 
 
 ## 总结
-本文首先从计算机资源利用率的角度分析了多线程的存在的问题，异步编程可以解决多线程的问题，协程也是一部编程的一种形态
+本文首先从计算机资源利用率的角度分析了多线程的存在的问题，异步编程可以解决多线程的问题，但是部分异步编程也会存在代码难以理解和排查不便的问题。协程也是异步编程的一种形态，但是语言自带的协程能解决这类问题。
 ## Reference
 
-* [JEP 425: Virtual Threads (Preview)](https://openjdk.org/jeps/436)
+* [JEP 436: Virtual Threads (Second Preview)](https://openjdk.org/jeps/436)
 * [Kotlin Coroutines: Design and Implementation](https://dl.acm.org/doi/pdf/10.1145/3486607.3486751)
