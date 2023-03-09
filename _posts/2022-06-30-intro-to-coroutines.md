@@ -8,10 +8,28 @@ category: Coroutine
 
 ## 多线程的困境
 在多核时代，多线程技术是提高计算机利用率的主要手段，当一个线程某些原因（比如 IO )而阻塞时，线程就无法继续运行，那么操作系统会调度其他线程运行，这样 CPU 就会保持运行。但是对于操作系统来说，线程切换是有成本的，如果频繁的发生线程切换，那也是一笔不小的开销。另一方面，操作系统在分配线程时，也需要为线程分配其内存栈，也有一定的内存开销，所以一个操作系统能够创建的线程数量也是有限的。
+考虑一种场景，针对每个请求，假设接收到请求以后，需要等待 1 秒再进行处理，那么使用多线程的一个请求一个线程的处理方式可能就是这样的。
+
+```java
+void handle(Request request) {
+    Thread.sleep(1000);
+    doSomework(request);
+}
+```
+这样处理会让处理的线程在 sleep 的时候让出 CPU，但是线程确还是一直存在的，占用着资源。
 对于多数 IO 密集型的应用（比如 Web 应用服务器Tomcat），一般采用一个线程对应一个请求的方式，但是对于 IO 密集型的应用，大多数时间都在阻塞等待 IO 事件的完成，而在等待过程中，线程却一直被占用着，有限的线程没有发挥出其应有的能力，而线程数过多也带来了一笔不小的 CPU 切换开销。
 
 ## 异步编程
-为了有效的利用资源，可以将一个线程处理一个请求的处理方式改为异步处理。最简单的异步处理的场景是：假设一个请求会有多次 IO 操作，如果几次 IO 操作都进行同步处理，那么 IO 处理的总时间为这几次 IO 时间的总和，但是如果能将这几次 IO 处理并行化，那 IO 处理的总时间则为 IO 处理中最长时间的一次 IO 时间，对于请求处理线程，在 IO 的时候，还可以处理不依赖 IO 结果的操作，这将大大减少这次请求处理的总时间，如下面一段代码所示。
+为了有效的利用资源，可以将一个线程处理一个请求的处理方式改为异步处理。针对上面的请求处理使用异步的方式可以这样来实现。
+
+```java
+ ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors());
+        scheduledExecutorService.schedule(() -> {
+            doSomework(request);
+        }, 1000, TimeUnit.MILLISECONDS);
+```
+这样就实现了再另外一个异步处理请求，但是换了一个线程处理。
+再看另一个异步处理的场景是：假设一个请求会有多次 IO 操作，如果几次 IO 操作都进行同步处理，那么 IO 处理的总时间为这几次 IO 时间的总和，但是如果能将这几次 IO 处理并行化，那 IO 处理的总时间则为 IO 处理中最长时间的一次 IO 时间，对于请求处理线程，在 IO 的时候，还可以处理不依赖 IO 结果的操作，这将大大减少这次请求处理的总时间，如下面一段代码所示。
 
 ```java
 Future<Response1> f1 = ioRequest1();
@@ -32,7 +50,7 @@ computeResult(f1.get(), f2.get());
 ![coroutine-thread-processor](/images/coroutine/processor-thread-coroutine.drawio.png)
 
 每个线程在同一时刻只会调度一个协程执行，协程间的切换在用户态执行，无需操作系统参与，运行开销比较小。如果某个正在执行中的协程遇到 IO 事件，那么就暂停该协程的执行，再调度其他待执行的协程，等 IO 事件完成，就再等待调度。这样就实现了协程的暂停和恢复。
-
+1   
 
 ## 协程的分类
 根据协程的实现方式，可以将协程分为有栈协程（stackful coroutine）和无栈协程（stackless coroutine）。有栈协程的代表就是 Go 语言的 goroutine，Java 语言的协程（Virtual Thread）也是有栈协程。而 C++，C# 和 Kotlin 等语言则实现的是无栈协程，当然 C++ 语言也有许多有栈协程的实现。
