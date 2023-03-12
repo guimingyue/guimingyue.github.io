@@ -24,12 +24,14 @@ void handle(Request request) {
 
 ```java
  ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors());
-        scheduledExecutorService.schedule(() -> {
+
+ void handle(Request request) {
+    scheduledExecutorService.schedule(() -> {
             doSomework(request);
         }, 1000, TimeUnit.MILLISECONDS);
+}     
 ```
-这样就实现了再另外一个异步处理请求，但是换了一个线程处理。
-再看另一个异步处理的场景是：假设一个请求会有多次 IO 操作，如果几次 IO 操作都进行同步处理，那么 IO 处理的总时间为这几次 IO 时间的总和，但是如果能将这几次 IO 处理并行化，那 IO 处理的总时间则为 IO 处理中最长时间的一次 IO 时间，对于请求处理线程，在 IO 的时候，还可以处理不依赖 IO 结果的操作，这将大大减少这次请求处理的总时间，如下面一段代码所示。
+这样就实现了在另外一个异步处理请求，只是换了一个线程处理该请求。再看另一个异步处理的场景是：假设一个请求会有多次 IO 操作，如果几次 IO 操作都进行同步处理，那么 IO 处理的总时间为这几次 IO 时间的总和，但是如果能将这几次 IO 处理并行化，那 IO 处理的总时间则为 IO 处理中最长时间的一次 IO 时间，对于请求处理线程，在 IO 的时候，还可以处理不依赖 IO 结果的操作，这将大大减少这次请求处理的总时间，如下面一段代码所示。
 
 ```java
 Future<Response1> f1 = ioRequest1();
@@ -54,6 +56,73 @@ computeResult(f1.get(), f2.get());
 
 ## 协程的分类
 根据协程的实现方式，可以将协程分为有栈协程（stackful coroutine）和无栈协程（stackless coroutine）。有栈协程的代表就是 Go 语言的 goroutine，Java 语言的协程（Virtual Thread）也是有栈协程。而 C++，C# 和 Kotlin 等语言则实现的是无栈协程，当然 C++ 语言也有许多有栈协程的实现。
+
+### Go 的协程
+在 Go 语言中使用协程（goroutine）非常简单，如下所示，下载一个 url 指定的网页数据，通过 `go` 关键字就能启动一个协程执行相应的函数`fetchUrl`，由于`fetchUrl`是在一个函数中执行的，所以函数中执行`Sleep`时只是协程会暂停，而线程则会继续执行其他可执行的计算，比如执行另一个协程。
+
+```Go
+func handle(request string) {
+    ch := make(chan []byte, 1)
+    // 启动一个协程
+    go fetchUrl(request, ch)
+    return <- ch
+}
+
+func fetchUrl(url string, ch chan []byte) {
+    time.Sleep(time.Second)
+    resp, _ := http.Get(url)
+    defer resp.Body.close()
+    d, _ := ioUtil.ReadAll(resp.Body)
+    ch <- d
+} 
+```
+
+### Kotlin 的协程
+Kotlin 语言的协程与 Go 语言不一样，实现与上述同样的功能代码如下。
+
+```Kotlin
+suspend fun handle(url: String): ByteArray = coroutineScope { 
+    val deferred: Deferred<ByteArray> = async(Dispatchers.IO) {
+        delay(1000)
+        fetchUrl(url)
+    }
+    deferred.await()
+}
+
+fun fetchUrl(url: String): ByteArray {
+    with(URL(url).openConnection() as HttpURLConnection) {
+        return inputStream.readBytes()
+    }
+}
+```
+### Java 的协程
+Java 语言在 Java 19 版本中发布了协程的第一个预览版本，实现上述的功能代码如下。Java 语言的协程的命名为虚拟线程（Virtual Thread），在使用时，它就是一个`java.lang.Thread`的子类`java.lang.VirtualThread`实例对象。
+
+```Java
+
+// 创建协程的 ExecutorService
+ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
+    
+byte[] handle(String url) throws ExecutionException, InterruptedException {
+    Future<byte[]> future = executorService.submit(() -> {
+        try {
+            TimeUnit.SECONDS.sleep(1);
+            return fetchURL(url);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    });
+    return future.get();
+}
+
+byte[] fetchURL(String url) throws IOException {
+    URL u = new URL(url);
+    try (var in = u.openStream()) {
+        return in.readAllBytes();
+    }
+}
+```
+
 一个线程在暂停调度时，操作系统会保存线程执行的“现场”，当再次调度到该线程执行时则会恢复“现场”，所以协程也一样，暂停和恢复协程的执行也需要保存和恢复“现场”，这个过程就可以分为有栈的实现和非栈的实现。
 
 
