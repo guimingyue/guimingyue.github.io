@@ -52,15 +52,14 @@ computeResult(f1.get(), f2.get());
 ![coroutine-thread-processor](/images/coroutine/processor-thread-coroutine.drawio.png)
 
 每个线程在同一时刻只会调度一个协程执行，协程间的切换在用户态执行，无需操作系统参与，运行开销比较小。如果某个正在执行中的协程遇到 IO 事件，那么就暂停该协程的执行，再调度其他待执行的协程，等 IO 事件完成，就再等待调度。这样就实现了协程的暂停和恢复。
-1   
 
 ## 协程的分类
-根据协程的实现方式，可以将协程分为有栈协程（stackful coroutine）和无栈协程（stackless coroutine）。有栈协程的代表就是 Go 语言的 goroutine，Java 语言的协程（Virtual Thread）也是有栈协程。而 C++，C# 和 Kotlin 等语言则实现的是无栈协程，当然 C++ 语言也有许多有栈协程的实现。
+如何在支持协程的编程语言中使用协程呢？那么先看看如何基于协程从下载一个网页数据，Go，Kotlin 和 Java 语言分别如下。
 
 ### Go 的协程
 在 Go 语言中使用协程（goroutine）非常简单，如下所示，下载一个 url 指定的网页数据，通过 `go` 关键字就能启动一个协程执行相应的函数`fetchUrl`，由于`fetchUrl`是在一个函数中执行的，所以函数中执行`Sleep`时只是协程会暂停，而线程则会继续执行其他可执行的计算，比如执行另一个协程。
 
-```Go
+```go
 func handle(request string) {
     ch := make(chan []byte, 1)
     // 启动一个协程
@@ -80,7 +79,7 @@ func fetchUrl(url string, ch chan []byte) {
 ### Kotlin 的协程
 Kotlin 语言的协程与 Go 语言不一样，实现与上述同样的功能代码如下。
 
-```Kotlin
+```kotlin
 suspend fun handle(url: String): ByteArray = coroutineScope { 
     val deferred: Deferred<ByteArray> = async(Dispatchers.IO) {
         delay(1000)
@@ -98,7 +97,7 @@ fun fetchUrl(url: String): ByteArray {
 ### Java 的协程
 Java 语言在 Java 19 版本中发布了协程的第一个预览版本，实现上述的功能代码如下。Java 语言的协程的命名为虚拟线程（Virtual Thread），在使用时，它就是一个`java.lang.Thread`的子类`java.lang.VirtualThread`实例对象。
 
-```Java
+```java
 
 // 创建协程的 ExecutorService
 ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
@@ -122,6 +121,9 @@ byte[] fetchURL(String url) throws IOException {
     }
 }
 ```
+### 有栈协程与无栈协程
+从上面 Go，Kotlin 和 Java 这几种语言的协程使用上来看 Java 和 Go 比较像，只是 Go 语言的协程使用更简洁，而 Kotlin 则通过 `suspend`，`asyn` 等关键字来使用协程，这两种不同的形式到底有什么区别呢？
+主要是编程语言实现协程的实现方式有区别，协程的实现方式可以分为有栈协程（stackful coroutine）和无栈协程（stackless coroutine）。有栈协程的代表就是 Go 语言的 goroutine，Java 语言的协程（Virtual Thread）也是有栈协程。而 Kotlin，C++，C# 和 等语言则实现的是无栈协程，当然 C++ 语言也有许多有栈协程的实现（比如 libeasy）。
 
 一个线程在暂停调度时，操作系统会保存线程执行的“现场”，当再次调度到该线程执行时则会恢复“现场”，所以协程也一样，暂停和恢复协程的执行也需要保存和恢复“现场”，这个过程就可以分为有栈的实现和非栈的实现。
 
