@@ -149,8 +149,10 @@ byte[] fetchURL(String url) throws IOException {
 对于一个线程在暂停调度时，操作系统会保存线程执行的“现场”，当再次调度到该线程执行时则会恢复“现场”，所以协程也一样，暂停和恢复协程的执行也需要保存和恢复“现场”，这个过程的实现方式可以分为有栈的实现和无栈的实现。
 
 #### 有栈协程的实现
-有栈协程顾名思义，也就是会有一个协程自有的栈（一段堆内存）来存储其执行的状态，当协程需要暂停时，就将当前的状态保存到栈中，当协程需要恢复执行时，就使用栈中保存的状态恢复执行，但是这个过程中不会有操作系统线程的切换，而是在用户态完成的。那么什么时候需要切换协程呢？比如需要延迟当前的执行（sleep），又比如在进行 IO 时，都可以讲线程释放出来，待需要的时候就继续执行。在 Java 19 的虚拟线程的实现中，对虚拟线程进行 sleep 时，会调用到一个 native 的 `jdk.internal.vm.Continuation#doYield` 方法，这个方法的实现是一段汇编代码，各个平台的汇编代码实现可以参考 loom 项目代码中的 `gen_continuation_yield` 函数的实现。
-需要注意的是，有栈协程不需要编译器的支持，只需要语言的 runtime 层面的支持。
+有栈协程顾名思义，也就是会有一个协程自有的栈（一段堆内存）来存储其执行的状态，当协程需要暂停时，就将当前的状态保存到栈中，当协程需要恢复执行时，就使用栈中保存的状态恢复执行，但是这个过程中不会有操作系统线程的切换，而是在用户态完成的。那么什么时候要切换协程呢？比如需要延迟当前的执行（sleep）的时候，对于线程来说，直接进行 sleep 会阻塞当前的线程执行，但是暂停协程，则线程可以执行另一个协程。
+又比如在进行 IO 时，可以将线程释放出来，待 IO 完成后，在需要的时候就继续执行。在 Java 19 的虚拟线程的实现中，对虚拟线程进行 sleep 时，会调用到一个 native 的 `jdk.internal.vm.Continuation#doYield` 方法，这个方法的实现是一段汇编代码，各个平台的汇编代码实现可以参考 loom 项目代码中的 `gen_continuation_yield` 函数的实现。
+
+需要注意的是，有栈协程不需要编译器的支持，只需要语言的 runtime 层面的支持。对于 Java 19，除了上述协程暂停时记录当前执行状态的代码实现，Java 19 还引入了 VirtualThread 来表示一个协程对象，并且使用 Java 7 引入的`ForkJoinPool`作为协程调度器的实现，具体的代码实现可以参考`java.lang.VirtualThread`类的代码。
 
 #### 无栈协程的实现
 无栈协程的实现则是由语言的编译器根据定义写成的关键字将写成编译成状态机来实现。以 Kotlin 语言为例，一个可暂停的方法如下。`suspend`来定义一个方法，标识其在协程内部使用，它可以调用其他`suspend`的方法，比如`delay`这样可以暂停协程，但是不会阻塞线程的方法。对于 Kotlin 语言，它支持在 JVM 平台上实现协程，而 JVM 平台目前还没有稳定的方式能实现方法的暂停（Java 虚拟线程在 Java 19 中出现并且是预览版本），所以 Kotlin 需要从编译器层面来实现协程。
@@ -158,10 +160,10 @@ byte[] fetchURL(String url) throws IOException {
 ```kotlin
 suspend fun doWorld() {
     delay(1000L)
-    println("World!")
+    println("Hello World!")
 }
 ```
-编译器在编译协程代码时，会识别代码中每一个可暂停的点，对齐进行标记，假设有某个方法 N 个可暂停的点，M 个 return 语句，那么就会生成 N + M 个状态，每个状态都代表当前方法执行到的一个状态，每次暂停都会给状态进行赋值，恢复执行时会根据状态的值确定执行到哪个代码块了，比如 Kotlin 语言的协程例子中对 handle 方法反编译成 Java 后的不分代码如下。`invokeSuspend` 就是每次恢复执行时会调用到的方法。
+编译器在编译协程代码时，会识别代码中每一个可暂停的点，对齐进行标记，假设有某个方法 N 个可暂停的点，M 个 return 语句，那么就会生成 N + M 个状态，每个状态都代表当前方法执行到的一个状态，每次暂停都会给状态进行赋值，恢复执行时会根据状态的值确定执行到哪个代码块了，比如 Kotlin 语言的协程例子中对 handle 方法反编译成 Java 后的部分状态机代码如下。`invokeSuspend` 就是每次恢复执行时会调用到的方法。详细的 Kotlin 协程的设计和实现可以参考其相关论文《Kotlin Coroutines: Design and Implementation》 。
 
 ```java
 int label;
@@ -194,4 +196,4 @@ return HandleKt.fetchUrl(url);
 
 * [JEP 436: Virtual Threads (Second Preview)](https://openjdk.org/jeps/436)
 * [Kotlin Coroutines: Design and Implementation](https://dl.acm.org/doi/pdf/10.1145/3486607.3486751)
-* [Coroutines | Kotlin Documentation](https://kotlinlang.org/docs/coroutines-overview.html)
+* [Coroutines Kotlin Documentation](https://kotlinlang.org/docs/coroutines-overview.html)
