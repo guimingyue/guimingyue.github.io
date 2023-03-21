@@ -80,7 +80,7 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 在 Go 语言中使用协程（goroutine）非常简单，如下所示，下载一个 url 指定的网页数据，通过 `go` 关键字就能启动一个协程执行相应的函数`fetchUrl`，由于`fetchUrl`是在一个函数中执行的，所以函数中执行`Sleep`时只是协程会暂停，而线程则会继续执行其他可执行的计算，比如执行另一个协程。
 
 ```go
-func handle(request string) {
+func handle(request string) []byte {
     ch := make(chan []byte, 1)
     // 启动一个协程
     go fetchUrl(request, ch)
