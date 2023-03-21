@@ -90,8 +90,8 @@ func handle(request string) []byte {
 func fetchUrl(url string, ch chan []byte) {
     time.Sleep(time.Second)
     resp, _ := http.Get(url)
-    defer resp.Body.close()
-    d, _ := ioUtil.ReadAll(resp.Body)
+    defer resp.Body.Close()
+    d, _ := io.ReadAll(resp.Body)
     ch <- d
 } 
 ```
