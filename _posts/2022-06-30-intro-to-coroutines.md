@@ -74,7 +74,7 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 ```
 
 ## 协程的分类
-如何在支持协程的编程语言中使用协程呢？那么先看看如何基于协程从下载一个网页数据，Go，Kotlin 和 Java 语言分别如下。
+如何在支持协程的编程语言中使用协程呢？先看看如何使用协程下载一个网页数据，Go，Kotlin 和 Java 语言的实现分别如下。
 
 ### Go 的协程
 在 Go 语言中使用协程（goroutine）非常简单，如下所示，下载一个 url 指定的网页数据，通过 `go` 关键字就能启动一个协程执行相应的函数`fetchUrl`，由于`fetchUrl`是在一个函数中执行的，所以函数中执行`Sleep`时只是协程会暂停，而线程则会继续执行其他可执行的计算，比如执行另一个协程。
@@ -142,7 +142,7 @@ byte[] fetchURL(String url) throws IOException {
 }
 ```
 ### 有栈协程与无栈协程
-从上面 Go，Kotlin 和 Java 这几种语言的协程使用上来看 Java 和 Go 比较像，只是 Go 语言的协程使用更简洁，而 Kotlin 则通过 `suspend`，`asyn` 等关键字来使用协程，这两种不同的形式到底有什么区别呢？
+从上面 Go，Kotlin 和 Java 这几种语言的协程使用上来看 Java 和 Go 比较像，只是 Go 语言的协程使用更简洁，而 Kotlin 则通过 `suspend`，`asyn`，`await` 等关键字（函数）来使用协程，这两种不同的形式到底有什么区别呢？
 主要是编程语言实现协程的实现方式有区别，协程的实现方式可以分为有栈协程（stackful coroutine）和无栈协程（stackless coroutine）。有栈协程的代表就是 Go 语言的 goroutine，Java 语言的协程（Virtual Thread）也是有栈协程。而 Kotlin，C++，C# 和 等语言则实现的是无栈协程，当然 C++ 语言也有许多有栈协程的实现（比如 libeasy）。
 协程本质上是一个可暂停执行的函数，也就是说线程在执行一个函数时，可以暂停这个函数的执行，转而去执行其他的函数。正常情况下，从一个函数到另一个函数有两种方式，调用函数和从调用的函数返回，但是协程的暂停函数不是这种情况，而是在函数执行的中间暂停。那么又如何实现函数的暂停呢？
 
