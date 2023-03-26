@@ -42,10 +42,10 @@ execSome();
 computeResult(f1.get(), f2.get());
 ```
 
-异步编程可以改善资源利用率，但是也会存在代码不容易理解，部分异步模型会导致排查问题不方便，所以需要探索更合适的异步编程方案。
+异步编程可以改善资源利用率，但是也会存在代码不容易理解，部分异步模型会导致排查问题不方便（比如 Rx 系列），所以需要探索更合适的异步编程方案。
 
 ## 协程
-协程也是一种异步编程的方式，一般来说它是指可以一段暂停和恢复的函数。一般来说，函数只有从开始执行和执行结束，中间是无法暂停的，那么为什么要
+协程也是一种异步编程的方式，它其实就是一个可以暂停和恢复的函数。一般来说，函数只有从开始执行和执行结束，中间是无法暂停的，那么为什么要
 暂停函数呢？为了提高计算机的资源利用率。从前文可以知道，线程会有切换开销和内存占用的开销，那如果线程不是由操作系统创建的，而是在用户态根据需求创建并且调度的，那就可以解决使用线程的问题。从这个角度来讲，协程就是用户态的线程，它在用户态创建，运行在线程之上，由编程语言的运行时调度器进行调度。当函数（协程）执行到一段 IO 这样耗时的操作时，就可以让出线程资源，等待 IO 完成后继续被调度到。
 
 协程还是会由操作系统的线程来执行，而线程则是在处理器上执行的，所以协程，线程和处理器的关系可以用下图表示。
@@ -74,13 +74,13 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 ```
 
 ## 协程的分类
-如何在支持协程的编程语言中使用协程呢？那么先看看如何基于协程从下载一个网页数据，Go，Kotlin 和 Java 语言分别如下。
+如何在支持协程的编程语言中使用协程呢？先看看如何使用协程下载一个网页数据，Go，Kotlin 和 Java 语言的实现分别如下。
 
 ### Go 的协程
 在 Go 语言中使用协程（goroutine）非常简单，如下所示，下载一个 url 指定的网页数据，通过 `go` 关键字就能启动一个协程执行相应的函数`fetchUrl`，由于`fetchUrl`是在一个函数中执行的，所以函数中执行`Sleep`时只是协程会暂停，而线程则会继续执行其他可执行的计算，比如执行另一个协程。
 
 ```go
-func handle(request string) {
+func handle(request string) []byte {
     ch := make(chan []byte, 1)
     // 启动一个协程
     go fetchUrl(request, ch)
@@ -90,8 +90,8 @@ func handle(request string) {
 func fetchUrl(url string, ch chan []byte) {
     time.Sleep(time.Second)
     resp, _ := http.Get(url)
-    defer resp.Body.close()
-    d, _ := ioUtil.ReadAll(resp.Body)
+    defer resp.Body.Close()
+    d, _ := io.ReadAll(resp.Body)
     ch <- d
 } 
 ```
@@ -142,7 +142,7 @@ byte[] fetchURL(String url) throws IOException {
 }
 ```
 ### 有栈协程与无栈协程
-从上面 Go，Kotlin 和 Java 这几种语言的协程使用上来看 Java 和 Go 比较像，只是 Go 语言的协程使用更简洁，而 Kotlin 则通过 `suspend`，`asyn` 等关键字来使用协程，这两种不同的形式到底有什么区别呢？
+从上面 Go，Kotlin 和 Java 这几种语言的协程使用上来看 Java 和 Go 比较像，只是 Go 语言的协程使用更简洁，而 Kotlin 则通过 `suspend`，`asyn`，`await` 等关键字（函数）来使用协程，这两种不同的形式到底有什么区别呢？
 主要是编程语言实现协程的实现方式有区别，协程的实现方式可以分为有栈协程（stackful coroutine）和无栈协程（stackless coroutine）。有栈协程的代表就是 Go 语言的 goroutine，Java 语言的协程（Virtual Thread）也是有栈协程。而 Kotlin，C++，C# 和 等语言则实现的是无栈协程，当然 C++ 语言也有许多有栈协程的实现（比如 libeasy）。
 协程本质上是一个可暂停执行的函数，也就是说线程在执行一个函数时，可以暂停这个函数的执行，转而去执行其他的函数。正常情况下，从一个函数到另一个函数有两种方式，调用函数和从调用的函数返回，但是协程的暂停函数不是这种情况，而是在函数执行的中间暂停。那么又如何实现函数的暂停呢？
 
