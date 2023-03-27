@@ -22,6 +22,6 @@ Log Manager（LogMgr）对数据库运行过程中的日志进行读写，日志
 元数据管理（MetadataMgr）是用来对数据库运行过程中的元数据进行管理的，元数据包括表元数据，视图元数据，统计信息元数据，索引元数据。 
 
  ### 事务
-
+ 
  SimpleDB 的事务（Transaction）的并发控制实现的加锁粒度是是 Block 级别的。通过`simpledb.server.SimpleDB#newTx`可以创建一个事务。
 
