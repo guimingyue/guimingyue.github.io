@@ -17,6 +17,8 @@ category: 其他
     * 网络监控
     * CPU 
 * 数据库监控
+   * 常规指标 CPU，Connection，IOPS
+   * 慢 SQL
 * 消息队列监控
    * 消息堆积量监控
 * RPC 监控
