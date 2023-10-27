@@ -12,10 +12,11 @@ This article is about the summary of the readings of my 2023.
 * 《The C++ Programming Language》Fourth Edition
 * 《A Tour of C++》2nd Edition
 * 《Database Systems Concepts》
+* 《微积分的力量》
 * 《基督山伯爵》
 * 《邓小平时代》
 * 《Elon Musk》
 
 # Paper
 
-* 
+* 《Kotlin Coroutines: Design and Implementation》
