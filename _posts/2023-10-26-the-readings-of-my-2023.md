@@ -16,6 +16,7 @@ This article is about the summary of the readings of my 2023.
 * 《基督山伯爵》
 * 《邓小平时代》
 * 《Elon Musk》
+* 《黄金时代》
 
 # Paper
 
