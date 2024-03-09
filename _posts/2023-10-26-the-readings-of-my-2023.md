@@ -17,6 +17,7 @@ This article is about the summary of the readings of my 2023.
 * 《邓小平时代》
 * 《Elon Musk》
 * 《黄金时代》
+* 《Unix: A History and a Memoir》
 
 # Paper
 
