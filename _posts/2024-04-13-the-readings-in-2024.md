@@ -15,6 +15,9 @@ This article is about the books and papers of my 2024.
 * 《我的几何人生：丘成桐自传》
 * 《李诞脱口秀工作手册》
 * 《潜规则：中国历史中的真实游戏》reading
+* 《红楼梦》
+* 《Practical Storage Engine Design & Implementation》第二次读
+* 《素食者》
 
 # Paper
 
