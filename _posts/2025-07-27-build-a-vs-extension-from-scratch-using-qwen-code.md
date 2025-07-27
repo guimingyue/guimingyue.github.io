@@ -1,7 +1,6 @@
 ---
 layout: post
-title:  "Building a Visual Studio Code Extension from Scratch Using Qwen Code and Lingma"
-date:   2025-07-27 15:00:00
+title:  Building a Visual Studio Code Extension from Scratch Using Qwen Code and Lingma
 categories: AI Development
 ---
 
