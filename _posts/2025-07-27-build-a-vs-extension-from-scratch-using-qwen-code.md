@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "Building a Visual Studio Code Extension from Scratch Using Qwen Coder"
-date:   2025-07-27 15:00:00 +0800
+title:  "Building a Visual Studio Code Extension from Scratch Using Qwen Code and Lingma"
+date:   2025-07-27 15:00:00
 categories: AI Development
 ---
 
