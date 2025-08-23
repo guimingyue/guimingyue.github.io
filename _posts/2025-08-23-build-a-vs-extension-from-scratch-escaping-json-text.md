@@ -24,7 +24,7 @@ With that prompt, Qwen Code generated code to add the functionality. The summary
 
 Now the extension can escape and unescape JSON text. But when I tried to unescape the formated escaped JSON text, it failed with an error.
 
-```visual studio code
+```shell
 Failed to unescape text: Bad control character in string literal in JSON at position 3 (line 1 column 4)
 ```
 
