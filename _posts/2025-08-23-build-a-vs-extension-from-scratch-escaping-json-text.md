@@ -31,7 +31,7 @@ Failed to unescape text: Bad control character in string literal in JSON at posi
 So, I asked Qwen Code to fix the bug.
 
 ```shell
-Well done. But there is another problem when unescaping a json text with control character, consider this string  {
+> Well done. But there is another problem when unescaping a json text with control character, consider this string  {
       \"a\":\"x\",   
        \"c\":2, 
        \"d\":false                                                      
