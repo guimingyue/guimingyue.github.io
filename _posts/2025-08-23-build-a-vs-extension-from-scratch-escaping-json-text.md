@@ -45,6 +45,18 @@ Now we can escape and unescape JSON text in Visual Studio Code.
 
 ![Unescape Format Compact escape](/images/build_vscode_ext_qwen/unescape_format_compact_escape.gif)
 
+## Optimize Menu items
+
+Now beside the four commands in the Command Palette, we also add menu items to the Right Click Popup Menu. So let's group the menu items into a menu and show these menu items in the expanded menu list.
+
+```shell
+> Today we add two command menu items into the right click menu, there will be more command to be added. So can we group by the command menu items into a CodeJsonX menu item and expand the command menu items from the CodeJsonX menu item?
+```
+
+And after that prompt, Qwen Code generated code to group the command menu items into a CodeJsonX menu item. The menu items now are as follows:
+
+![Group by menu items](/images/build_vscode_ext_qwen/group_by_menu_items.png)
+
 ## Conclusion
 
 With the help of code assistant tools like Qwen Code, we added a new feature to our extension. Qwen Code understands the prompt and generates code to implement unescaping and escaping JSON text. It is a great relief to use Qwen Code to build our software.
