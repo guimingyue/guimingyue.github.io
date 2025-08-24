@@ -10,6 +10,10 @@ In the previous articles, we have implemented formatting/compacting and unescapi
 
 The official guide to publish to the Visual Studio Code extension Marketplace is [here](https://code.visualstudio.com/api/working-with-extensions/publishing-extension). First we should build a published package of our extension. And I'm not gonna to execute the build command by myself. So I ask Qwen Code to build the extension package.
 
+## Build the extension package
+
+The prompt building the extension package is as follows:
+
 ```shell
 > package this codebase to a VS Code extension package that can be published to VS Code extension market
 ```
@@ -25,6 +29,8 @@ So I uploaded the extension package to the VS Code extension marketplace and ins
 Qwen Code gave the summary on what it had done. Besides fixing the error, Qwen Code also build a new package. So I installed the new package and the error was fixed.
 
 ![Fix extension bug](/images/build_vscode_ext_qwen/published_v1.0.0_not_found_bugfix.png)
+
+Publish the extension to the Visual Studio Code Marketplace is easy, So I published the extension to the Visual Studio Code Marketplace by myself as the instructions of the official help content.
 
 ## Conclusion
 
