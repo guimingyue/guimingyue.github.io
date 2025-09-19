@@ -7,7 +7,7 @@ category:
 This article is about the books and papers of my 2025.
 
 # Book
-*  《AI Engineer》
+*  《AI Engineering》
 * 《Python编程快速上手：让繁琐工作自动化》
 * 《不被大风吹倒》莫言
 * 《毛泽东选集》reading
