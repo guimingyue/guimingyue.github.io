@@ -1,6 +1,6 @@
 ---
 layout: post
-title: The readings in 2024
+title: The readings in 2025
 category: 
 ---
 
