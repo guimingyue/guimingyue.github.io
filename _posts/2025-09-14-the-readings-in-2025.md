@@ -11,6 +11,7 @@ This article is about the books and papers of my 2025.
 *  《Python编程快速上手：让繁琐工作自动化》
 * 《不被大风吹倒》莫言
 * 《中国人在乌苏里边疆区》
+* 《深度学习入门：基于Python的理论与实现》第二次读
 * 《毛泽东选集》reading
 * 《红太阳是怎样升起的：延安整风的来龙去脉》 reading
 * 《金瓶梅》reading 
