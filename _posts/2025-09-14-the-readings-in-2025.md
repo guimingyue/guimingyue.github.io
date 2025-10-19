@@ -8,6 +8,7 @@ This article is about the books and papers of my 2025.
 
 # Book
 *  《AI Engineering》
+* 《我看见的世界：李飞飞自传》
 *  《Python编程快速上手：让繁琐工作自动化》
 * 《不被大风吹倒》莫言
 * 《中国人在乌苏里边疆区》
