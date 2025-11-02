@@ -13,7 +13,7 @@ This article is about the books and papers of my 2025.
 * 《不被大风吹倒》莫言
 * 《中国人在乌苏里边疆区》
 * 《深度学习入门：基于Python的理论与实现》第二次读
-* [《神经网络与深度学习》]（https://nndl.github.io/） unfinished & give up
+* [神经网络与深度学习]（https://nndl.github.io/） unfinished & give up
 * [Understanding Deep Learning](https://udlbook.github.io/udlbook/) reading
 * 《Build a Large Language Model (From Scratch)》 reading
 * [Dive into Deep Learning](https://d2l.ai/)  To Do
