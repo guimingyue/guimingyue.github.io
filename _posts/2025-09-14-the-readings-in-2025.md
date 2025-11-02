@@ -13,9 +13,14 @@ This article is about the books and papers of my 2025.
 * 《不被大风吹倒》莫言
 * 《中国人在乌苏里边疆区》
 * 《深度学习入门：基于Python的理论与实现》第二次读
+* [《神经网络与深度学习》]（https://nndl.github.io/） unfinished & give up
+* [Understanding Deep Learning](https://udlbook.github.io/udlbook/) reading
+* 《Build a Large Language Model (From Scratch)》 reading
+* [Dive into Deep Learning](https://d2l.ai/)  To Do
 * 《毛泽东选集》reading
 * 《红太阳是怎样升起的：延安整风的来龙去脉》 reading
 * 《金瓶梅》reading 
+* [《Natural Language Processing: Neural Networks and Large Language Models》]（https://niutrans.github.io/NLPBook/） To D 
 * 《The Pratice of Programming》 To Do 
 
 # Book reading in 2024 and 2023
