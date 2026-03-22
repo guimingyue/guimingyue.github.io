@@ -10,6 +10,7 @@ category: AI
 
 ## 深度学习入门：基于Python的理论与实现 
 《深度学习入门：基于Python的理论与实现》这本书是深度学习入门首选，这本书里对深度学习的基础概念介绍的还算比较清晰，神经网络，反向传播，梯度等等。书中通过实现一个手写数字识别的深度学习网络，将深度学习的基础知识点串起来了。
+
 ![深度学习入门：基于Python的理论与实现](/images/deep-learning-book-i-read/deep_learning_intro_based_on_py.jpg)
 
 ## 深度学习的数学
@@ -19,12 +20,13 @@ category: AI
 
 ## 深入浅出神经网络与深度学习
 《深入浅出神经网络与深度学习》这本书的内容与《深度学习入门：基于Python的理论与实现》有一些重复，入门的话还是《深度学习入门：基于Python的理论与实现》。两本书介绍的风格有点不一样，可以交替着看。
+
 ![深度学习的数学](/images/deep-learning-book-i-read/nn_and_deep_learning.jpg)
 
 # 深度学习进阶
 
 ## Understanding Deep Learning
-【《Understanding Deep Learning》】(https://udlbook.github.io/udlbook/)这本书其实也是一本入门的书，但是介绍的内容比前面那基本入门的书更有深度一些，涉及到了深度学习的方方面面。作者开放了 PDF 版本，可以在官网上下载。
+[《Understanding Deep Learning》](https://udlbook.github.io/udlbook/)这本书其实也是一本入门的书，但是介绍的内容比前面那基本入门的书更有深度一些，涉及到了深度学习的方方面面。作者开放了 PDF 版本，可以在官网上下载。
 
 ## 神经网络与深度学习
 [《神经网络与深度学习》](https://nndl.github.io/) 这本书是复旦大学[邱锡鹏](https://nndl.github.io/)老师于 2021 年出版的，PDF 版本也是官方版本。不适合深度学习入门，但是入门知道大概原理以后，想学习深度学习的数学原理推导，可以看看。
